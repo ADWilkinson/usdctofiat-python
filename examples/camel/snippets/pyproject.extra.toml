@@ -1,0 +1,5 @@
+# Paste into camel-ai/camel extras when the host PR opens.
+# Not an installable extra of *this* repo.
+
+# [project.optional-dependencies]
+usdctofiat = ["usdctofiat"]

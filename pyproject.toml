@@ -37,6 +37,19 @@ Repository = "https://github.com/ADWilkinson/usdctofiat-python"
 where = ["src"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "examples/agno/tests"]
-pythonpath = ["examples/agno"]
+testpaths = [
+    "tests",
+    "examples/agno/tests",
+    "examples/crewai/tests",
+    "examples/camel/tests",
+    "examples/dify/tests",
+    "examples/langflow/tests",
+]
+pythonpath = [
+    "examples/agno",
+    "examples/crewai",
+    "examples/camel",
+    "examples/dify",
+    "examples/langflow/src",
+]
 addopts = "-q"

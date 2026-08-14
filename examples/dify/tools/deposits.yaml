@@ -1,0 +1,20 @@
+identity:
+  name: usdctofiat_deposits
+  author: ADWilkinson
+  label:
+    en_US: USDCtoFiat deposits
+description:
+  human:
+    en_US: List USDCtoFiat deposits for an owner on Base. Galleon Labs. Not a Peer Cash product.
+  llm: List USDCtoFiat deposits for a 0x owner on Base.
+parameters:
+  - name: owner
+    type: string
+    required: true
+    label:
+      en_US: Owner
+    llm_description: 0x depositor on Base.
+    form: llm
+extra:
+  python:
+    source: tools/deposits.py

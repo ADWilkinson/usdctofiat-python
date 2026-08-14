@@ -1,0 +1,20 @@
+identity:
+  name: usdctofiat_watch
+  author: ADWilkinson
+  label:
+    en_US: USDCtoFiat watch
+description:
+  human:
+    en_US: Watch a USDCtoFiat deposit by id. Galleon Labs. Not a Peer Cash product.
+  llm: Watch a USDCtoFiat deposit by id (indexer snapshot).
+parameters:
+  - name: deposit_id
+    type: string
+    required: true
+    label:
+      en_US: Deposit id
+    llm_description: Fast composite resume key or Best numeric EscrowV2 id.
+    form: llm
+extra:
+  python:
+    source: tools/watch.py

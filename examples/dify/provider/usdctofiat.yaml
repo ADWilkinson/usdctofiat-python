@@ -1,0 +1,28 @@
+identity:
+  author: ADWilkinson
+  name: usdctofiat
+  label:
+    en_US: USDCtoFiat
+    zh_Hans: USDCtoFiat
+    ja_JP: USDCtoFiat
+    pt_BR: USDCtoFiat
+  description:
+    en_US: >-
+      USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
+      Not a Peer Cash product. mode is required. No private keys.
+    zh_Hans: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
+    ja_JP: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
+    pt_BR: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
+  icon: icon.svg
+  tags:
+    - finance
+    - business
+tools:
+  - tools/cashout.yaml
+  - tools/estimate.yaml
+  - tools/watch.yaml
+  - tools/withdraw.yaml
+  - tools/deposits.yaml
+extra:
+  python:
+    source: provider/usdctofiat.py

@@ -1,0 +1,20 @@
+identity:
+  name: usdctofiat_withdraw
+  author: ADWilkinson
+  label:
+    en_US: USDCtoFiat withdraw
+description:
+  human:
+    en_US: Withdraw or close a USDCtoFiat deposit. Returns an unsigned tx. No private keys. Galleon Labs. Not a Peer Cash product.
+  llm: Withdraw or close a USDCtoFiat deposit. Returns unsigned tx. Never ask for a private key.
+parameters:
+  - name: deposit_id
+    type: string
+    required: true
+    label:
+      en_US: Deposit id
+    llm_description: EscrowV2 deposit id.
+    form: llm
+extra:
+  python:
+    source: tools/withdraw.py

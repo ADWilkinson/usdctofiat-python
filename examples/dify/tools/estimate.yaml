@@ -1,0 +1,41 @@
+identity:
+  name: usdctofiat_estimate
+  author: ADWilkinson
+  label:
+    en_US: USDCtoFiat estimate
+description:
+  human:
+    en_US: Estimate a USDCtoFiat cash-out. Not a locked quote. mode is required. Galleon Labs. Not a Peer Cash product.
+  llm: Estimate a USDCtoFiat cash-out. mode is required: fast (0 bps) or best (10 bps). Not a Peer Cash product.
+parameters:
+  - name: mode
+    type: select
+    required: true
+    label:
+      en_US: Mode
+    llm_description: Required. "fast" or "best". No default.
+    form: llm
+    options:
+      - label:
+          en_US: fast (0% / TOFIAT)
+        value: fast
+      - label:
+          en_US: best (Delegate, 10 bps)
+        value: best
+  - name: amount
+    type: string
+    required: true
+    label:
+      en_US: Amount
+    llm_description: Human USDC amount.
+    form: llm
+  - name: currency
+    type: string
+    required: true
+    label:
+      en_US: Currency
+    llm_description: Fiat ISO code.
+    form: llm
+extra:
+  python:
+    source: tools/estimate.py

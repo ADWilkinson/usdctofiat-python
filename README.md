@@ -75,12 +75,19 @@ There is no `POST /cashout`. Deposit creation is onchain.
 
 HTTP: `https://api.zkp2p.xyz` and `https://indexer.zkp2p.xyz/v1/graphql`.
 
-## Agno toolkit draft
+## Host toolkit drafts (local only)
 
-A local `UsdctoFiatTools` draft lives in [`examples/agno/`](examples/agno/).
-It is a copy-ready scaffold for a future `agno-agi/agno` PR (`agno[usdctofiat]`).
-It is not an installable Agno first-party tool. Do not open that host PR
-while the external cap is full. Mode is required. No private-key constructor.
+Copy-ready scaffolds live under `examples/`. They wrap `usdctofiat.cashout(mode="fast"|"best")`. Mode is required. No private-key constructor. Do **not** open an upstream host PR or marketplace listing from this tree. External cap is 2/2 (AgentKit #1442, Bankr #639).
+
+| Draft | Shape | Future unlock | Do not open |
+| --- | --- | --- | --- |
+| [`examples/agno/`](examples/agno/) | `UsdctoFiatTools` | in-tree `agno-agi/agno` when a slot frees | `agno-agi/agno` |
+| [`examples/crewai/`](examples/crewai/) | `BaseTool` | in-tree `crewAIInc/crewAI` `lib/crewai-tools` | `crewAIInc/crewAI` |
+| [`examples/dify/`](examples/dify/) | sideload `.difypkg` | own-repo sideload now; marketplace later | `langgenius/dify-plugins` |
+| [`examples/camel/`](examples/camel/) | `BaseToolkit` | in-tree `camel-ai/camel` `camel/toolkits/` | `camel-ai/camel` |
+| [`examples/langflow/`](examples/langflow/) | `lfx-usdctofiat` pip extension | PyPI then `pip install lfx-usdctofiat` (no host PR) | `langflow-ai/langflow` |
+
+No Hermes adapter or `hermes-plugin-index` PR from this repo.
 
 ## Licence
 

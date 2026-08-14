@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schemas.langflow.org/extension/v1.json",
+  "id": "lfx-usdctofiat",
+  "version": "0.1.0",
+  "name": "USDCtoFiat",
+  "description": "USDCtoFiat by Galleon Labs. Cash out Base USDC to fiat. Built on the public Peer/ZKP2P protocol. Not a Peer Cash product. mode is required. No private keys.",
+  "lfx": { "compat": ["1"] },
+  "bundles": [{ "name": "usdctofiat", "path": "components/usdctofiat" }],
+  "capabilities": { "requiresCredentials": false }
+}

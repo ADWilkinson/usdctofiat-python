@@ -1,0 +1,77 @@
+identity:
+  name: usdctofiat_cashout
+  author: ADWilkinson
+  label:
+    en_US: USDCtoFiat cashout
+    zh_Hans: USDCtoFiat cashout
+    ja_JP: USDCtoFiat cashout
+    pt_BR: USDCtoFiat cashout
+description:
+  human:
+    en_US: >-
+      Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.
+      Built on the public Peer/ZKP2P protocol. Not a Peer Cash product.
+      mode is required. Returns unsigned txs. No private keys.
+    zh_Hans: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
+    ja_JP: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
+    pt_BR: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
+  llm: >-
+    Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. Not a Peer Cash
+    product. mode is required: fast (0% / TOFIAT) or best (Delegate, 10 bps).
+    Never ask for a wallet private key. Returns unsigned {to, data, value, chainId} txs.
+parameters:
+  - name: mode
+    type: select
+    required: true
+    label:
+      en_US: Mode
+    human_description:
+      en_US: Required. fast = 0% / TOFIAT. best = Delegate, 10 bps. No default.
+    llm_description: Required. "fast" (0% / TOFIAT) or "best" (Delegate, 10 bps). Never invent a default.
+    form: llm
+    options:
+      - label:
+          en_US: fast (0% / TOFIAT)
+        value: fast
+      - label:
+          en_US: best (Delegate, 10 bps)
+        value: best
+  - name: amount
+    type: string
+    required: true
+    label:
+      en_US: Amount
+    human_description:
+      en_US: Human USDC amount.
+    llm_description: Human USDC amount. An int is six-decimal units.
+    form: llm
+  - name: currency
+    type: string
+    required: true
+    label:
+      en_US: Currency
+    human_description:
+      en_US: Fiat ISO code, e.g. EUR, USD, GBP.
+    llm_description: Fiat ISO code such as EUR, USD, or GBP.
+    form: llm
+  - name: platform
+    type: string
+    required: true
+    label:
+      en_US: Platform
+    human_description:
+      en_US: Payment rail, e.g. revolut, venmo, monzo.
+    llm_description: Payment rail such as revolut, venmo, or monzo.
+    form: llm
+  - name: payee
+    type: string
+    required: true
+    label:
+      en_US: Payee
+    human_description:
+      en_US: Handle on that platform.
+    llm_description: Payee handle on the chosen platform.
+    form: llm
+extra:
+  python:
+    source: tools/cashout.py
