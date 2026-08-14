@@ -1,4 +1,4 @@
-"""USDCtoFiat watch component. Galleon Labs. Not Peer Cash."""
+"""USDCtoFiat watch component."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from ._lfx import Component, Message, MessageTextInput, Output
 
 class UsdctoFiatWatchComponent(Component):
     display_name = "USDCtoFiat watch"
-    description = "Watch a USDCtoFiat deposit by id. Galleon Labs. Not a Peer Cash product."
+    description = "Watch a USDCtoFiat deposit by id."
     name = "UsdctoFiatWatch"
     inputs = [MessageTextInput(name="deposit_id", display_name="Deposit id", required=True)]
     outputs = [Output(display_name="Snapshots", name="snapshots", method="build_watch")]

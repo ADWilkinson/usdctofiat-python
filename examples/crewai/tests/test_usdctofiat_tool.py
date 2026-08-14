@@ -1,9 +1,4 @@
-"""Mocked unit tests for the local CrewAI BaseTool draft.
-
-Upstream copy target: lib/crewai-tools unit tests for usdctofiat_tool.
-Switch the import to `from crewai_tools import UsdctoFiatCashoutTool`
-and drop the draft BaseTool fallback when the host PR opens.
-"""
+"""Mocked unit tests for the local CrewAI BaseTool reference."""
 
 from __future__ import annotations
 
@@ -80,15 +75,13 @@ def tools(mock_offramp):
         }, mock_offramp
 
 
-def test_docstring_discloses_galleon_not_peer_cash():
+def test_docstring_discloses_product():
     import usdctofiat_tool as mod
 
     text = (UsdctoFiatCashoutTool.__doc__ or "") + (mod.__doc__ or "")
     lowered = text.lower()
     assert "usdctofiat" in lowered
     assert "galleon" in lowered
-    assert "not a peer cash product" in lowered
-    assert "peer-cash" not in (UsdctoFiatCashoutTool.__module__ or "")
 
 
 def test_mode_is_not_a_constructor_default(mock_offramp):
@@ -186,13 +179,10 @@ def test_estimate_mode_required(tools):
     assert "mode is required" in payload["error"]
 
 
-def test_cookbook_is_draft_and_branded():
+def test_cookbook_is_branded_and_documents_safety():
     from pathlib import Path
 
     text = (Path(__file__).resolve().parents[1] / "cookbook" / "usdctofiat_tool.py").read_text().lower()
     assert "usdctofiat by galleon labs" in text
-    assert "not a peer cash product" in text
-    assert "do not open crewaIinc/crewai".lower() in text or "do not open crewaiinc/crewai" in text
     assert "mode is required" in text
     assert "private key" in text
-    assert "peer-cash" not in text

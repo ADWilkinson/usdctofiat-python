@@ -2,7 +2,7 @@
 USDCtoFiat Toolkit — USDC to fiat cash-out on Base
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 UsdctoFiatToolkit is a CAMEL BaseToolkit. mode is required on cashout
 and estimate: "fast" (0% / TOFIAT) or "best" (Delegate, 10 bps).
@@ -12,8 +12,7 @@ The toolkit does not accept a wallet private key. Inject a signer callback
 that submits unsigned {to, data, value, chainId} txs, or omit the signer
 and cashout() returns the unsigned prepare payload for the host to sign.
 
-This example is a draft for camel-ai/camel examples/.
-Do not open camel-ai/camel until a host slot is free.
+This example maps to CAMEL's toolkit examples.
 
 Run: `uv pip install usdctofiat` (or `pip install -e .` from this repo)
      `uv pip install camel-ai` when you actually run the agent.
@@ -23,7 +22,7 @@ from camel.agents import ChatAgent
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
 
-# Draft import (this repo). Upstream: from camel.toolkits import UsdctoFiatToolkit
+# Local reference import. Upstream: from camel.toolkits import UsdctoFiatToolkit
 import sys
 from pathlib import Path
 
@@ -46,7 +45,7 @@ toolkit = UsdctoFiatToolkit(signer=signer)
 # agent = ChatAgent(
 #     system_message=(
 #         "You help users cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. "
-#         "Built on the public Peer/ZKP2P protocol. Not a Peer Cash product. "
+#         "Built on the public Peer/ZKP2P protocol. "
 #         "Always ask the user to choose mode=fast (0% / TOFIAT) or mode=best "
 #         "(Delegate, 10 bps). Never invent a mode default. Never ask for a "
 #         "wallet private key."

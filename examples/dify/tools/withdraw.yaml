@@ -5,7 +5,7 @@ identity:
     en_US: USDCtoFiat withdraw
 description:
   human:
-    en_US: Withdraw or close a USDCtoFiat deposit. Returns an unsigned tx. No private keys. Galleon Labs. Not a Peer Cash product.
+    en_US: Withdraw or close a USDCtoFiat deposit. Returns an unsigned tx. No private keys.
   llm: Withdraw or close a USDCtoFiat deposit. Returns unsigned tx. Never ask for a private key.
 parameters:
   - name: deposit_id

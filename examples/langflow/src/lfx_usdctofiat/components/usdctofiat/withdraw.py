@@ -10,7 +10,7 @@ class UsdctoFiatWithdrawComponent(Component):
     display_name = "USDCtoFiat withdraw"
     description = (
         "Withdraw or close a USDCtoFiat deposit. Returns an unsigned tx. "
-        "No private keys. Galleon Labs. Not a Peer Cash product."
+        "No private keys."
     )
     name = "UsdctoFiatWithdraw"
     inputs = [MessageTextInput(name="deposit_id", display_name="Deposit id", required=True)]

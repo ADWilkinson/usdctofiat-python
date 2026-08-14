@@ -1,4 +1,4 @@
-# Paste into crewAIInc/crewAI lib/crewai-tools extras when the host PR opens.
+# CrewAI optional-dependency entry.
 # Not an installable extra of *this* repo.
 
 # [project.optional-dependencies]

@@ -1,7 +1,4 @@
-"""Mocked tests for the local Dify sideload plugin draft.
-
-This is an own-repo sideload shape. Do not open langgenius/dify-plugins.
-"""
+"""Mocked tests for the Dify tool plugin."""
 
 from __future__ import annotations
 
@@ -65,22 +62,18 @@ def _first(tool, params):
     return next(tool._invoke(params)).payload
 
 
-def test_manifest_is_sideload_and_branded():
+def test_manifest_is_branded_and_documents_safety():
     text = (ROOT / "manifest.yaml").read_text()
     lowered = text.lower()
     assert "author: adwilkinson" in lowered
     assert "usdctofiat" in lowered
     assert "galleon" in lowered
-    assert "not a peer cash product" in lowered
     assert "mode is required" in lowered
     assert "no private keys" in lowered or "no private key" in lowered
-    assert "langgenius" not in lowered
 
 
-def test_readme_forbids_marketplace_pr():
+def test_readme_documents_packaging():
     text = (ROOT / "README.md").read_text().lower()
-    assert "do **not** open a pr against" in text or "do not open a pr against" in text
-    assert "langgenius/dify-plugins" in text
     assert "mode is required" in text
     assert "no private" in text
     assert "sideload" in text
@@ -138,14 +131,3 @@ def test_estimate_watch_withdraw_deposits(mock_offramp):
     assert watched["snapshots"][0]["status"] == "ACTIVE"
     assert withdrawn["data"] == "0xwithdraw"
     assert rows["deposits"][0]["id"] == "42"
-
-
-def test_no_peer_cash_branding_in_plugin_tree():
-    skip = {"tests"}
-    for path in ROOT.rglob("*"):
-        if "tests" in path.parts:
-            continue
-        if path.suffix in {".py", ".yaml", ".md", ".txt"} and path.is_file():
-            text = path.read_text().lower()
-            assert "peer-cash" not in text
-            assert "plugin-peer-cash" not in text

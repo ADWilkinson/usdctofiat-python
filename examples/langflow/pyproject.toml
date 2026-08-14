@@ -1,5 +1,4 @@
-# Draft of the lfx-usdctofiat pip extension. Not published. No PyPI from this commit.
-# After a later publish: pip install lfx-usdctofiat && langflow run
+# lfx-usdctofiat pip extension
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
@@ -8,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lfx-usdctofiat"
 version = "0.1.0"
-description = "Langflow extension for USDCtoFiat by Galleon Labs. cashout(mode=fast|best). Not a Peer Cash product."
+description = "Langflow extension for USDCtoFiat by Galleon Labs. cashout(mode=fast|best)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

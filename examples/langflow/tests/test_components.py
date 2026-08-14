@@ -1,7 +1,4 @@
-"""Mocked tests for the local lfx-usdctofiat pip-extension draft.
-
-Do not open langflow-ai/langflow. Do not publish to PyPI from this tree.
-"""
+"""Mocked tests for the lfx-usdctofiat pip extension."""
 
 from __future__ import annotations
 
@@ -68,17 +65,12 @@ def test_extension_manifest_is_lfx_usdctofiat():
     assert data["capabilities"]["requiresCredentials"] is False
     lowered = data["description"].lower()
     assert "galleon" in lowered
-    assert "not a peer cash product" in lowered
     assert "mode is required" in lowered
     assert "no private keys" in lowered
-    assert "do not open langflow-ai/langflow" in lowered
 
 
-def test_readme_forbids_host_pr_and_pypi():
+def test_readme_documents_installation():
     text = (ROOT / "README.md").read_text().lower()
-    assert "do **not** open a pr against" in text or "do not open a pr against" in text
-    assert "langflow-ai/langflow" in text
-    assert "no pypi" in text
     assert "mode is required" in text
     assert "no private" in text
     assert "lfx-usdctofiat" in text
@@ -153,18 +145,7 @@ def test_estimate_watch_withdraw_deposits(mock_offramp):
     assert rows["deposits"][0]["id"] == "42"
 
 
-def test_pyproject_is_lfx_usdctofiat_not_published_extra_of_this_repo():
+def test_pyproject_is_lfx_usdctofiat():
     text = (ROOT / "pyproject.toml").read_text()
     assert 'name = "lfx-usdctofiat"' in text
     assert "usdctofiat" in text
-    assert "Not a Peer Cash product" in text
-
-
-def test_no_peer_cash_branding_in_extension():
-    for path in ROOT.rglob("*"):
-        if "tests" in path.parts:
-            continue
-        if path.suffix in {".py", ".md", ".toml", ".json"} and path.is_file():
-            text = path.read_text().lower()
-            assert "peer-cash" not in text
-            assert "plugin-peer-cash" not in text

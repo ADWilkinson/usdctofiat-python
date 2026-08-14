@@ -1,6 +1,4 @@
-"""Draft-only lfx stand-ins. Delete this module in a real lfx-usdctofiat publish
-and import from `lfx.custom.custom_component.component` / `lfx.io` / `lfx.schema.message`.
-"""
+"""Standalone lfx fallbacks for running the reference outside Langflow."""
 
 from __future__ import annotations
 
@@ -10,7 +8,7 @@ try:
     from lfx.custom.custom_component.component import Component
     from lfx.io import DropdownInput, MessageTextInput, Output
     from lfx.schema.message import Message
-except ImportError:  # draft-only
+except ImportError:  # standalone reference fallback
 
     class Component:  # type: ignore[no-redef]
         display_name = ""

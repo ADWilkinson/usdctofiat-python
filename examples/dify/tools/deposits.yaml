@@ -5,7 +5,7 @@ identity:
     en_US: USDCtoFiat deposits
 description:
   human:
-    en_US: List USDCtoFiat deposits for an owner on Base. Galleon Labs. Not a Peer Cash product.
+    en_US: List USDCtoFiat deposits for an owner on Base.
   llm: List USDCtoFiat deposits for a 0x owner on Base.
 parameters:
   - name: owner

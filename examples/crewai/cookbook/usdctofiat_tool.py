@@ -2,7 +2,7 @@
 USDCtoFiat Tools — USDC to fiat cash-out on Base
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 UsdctoFiatCashoutTool is a CrewAI BaseTool. mode is required on cashout
 and estimate: "fast" (0% / TOFIAT) or "best" (Delegate, 10 bps).
@@ -12,8 +12,7 @@ The tools do not accept a wallet private key. Inject a signer callback
 that submits unsigned {to, data, value, chainId} txs, or omit the signer
 and cashout() returns the unsigned prepare payload for the host to sign.
 
-This cookbook is a draft for a future crewAIInc/crewAI example.
-Do not open crewAIInc/crewAI until a host slot is free.
+This cookbook maps to CrewAI's tool examples.
 
 Run: `uv pip install usdctofiat` (or `pip install -e .` from this repo)
      `uv pip install crewai crewai-tools` when you actually run the crew.
@@ -21,7 +20,7 @@ Run: `uv pip install usdctofiat` (or `pip install -e .` from this repo)
 
 from crewai import Agent, Crew, Task
 
-# Draft import (this repo). Upstream: from crewai_tools import UsdctoFiatCashoutTool
+# Local reference import. Upstream: from crewai_tools import UsdctoFiatCashoutTool
 import sys
 from pathlib import Path
 
@@ -52,7 +51,7 @@ agent = Agent(
     goal="Help the user cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.",
     backstory=(
         "You use USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol. "
-        "Not a Peer Cash product. mode is required. Never ask for a wallet private key."
+        "Mode is required. Never ask for a wallet private key."
     ),
     tools=[cashout, estimate, watch, withdraw, deposits],
     verbose=True,

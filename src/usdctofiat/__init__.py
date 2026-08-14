@@ -2,7 +2,7 @@
 """USDCtoFiat by Galleon Labs.
 
 Python client for non-custodial USDC-to-fiat cash-out on Base.
-Built on the public Peer/ZKP2P protocol. Not a Peer Cash product.
+Built on the public Peer/ZKP2P protocol.
 
 cashout(mode="fast"|"best") is required. Fast is 0% / TOFIAT. Best is Delegate, 10 bps.
 create_offramp() locks peer-ref-TOFIAT then galleonlabs. No private keys.

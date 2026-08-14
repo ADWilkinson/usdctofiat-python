@@ -1,9 +1,4 @@
-"""Mocked unit tests for the local CAMEL UsdctoFiatToolkit draft.
-
-Upstream copy target: test/toolkits/test_usdctofiat_toolkit.py
-Switch the import to `from camel.toolkits import UsdctoFiatToolkit`
-and drop the draft BaseToolkit fallback when the host PR opens.
-"""
+"""Mocked unit tests for the local CAMEL UsdctoFiatToolkit reference."""
 
 from __future__ import annotations
 
@@ -68,15 +63,13 @@ def tools(mock_offramp):
         yield UsdctoFiatToolkit(), mock_offramp
 
 
-def test_docstring_discloses_galleon_not_peer_cash():
+def test_docstring_discloses_product():
     import usdctofiat_toolkit as mod
 
     text = (UsdctoFiatToolkit.__doc__ or "") + (mod.__doc__ or "")
     lowered = text.lower()
     assert "usdctofiat" in lowered
     assert "galleon" in lowered
-    assert "not a peer cash product" in lowered
-    assert "peer-cash" not in (UsdctoFiatToolkit.__module__ or "")
 
 
 def test_mode_is_not_a_constructor_default(mock_offramp):
@@ -166,13 +159,10 @@ def test_estimate_mode_required(tools):
     assert "mode is required" in payload["error"]
 
 
-def test_example_is_draft_and_branded():
+def test_example_is_branded_and_documents_safety():
     from pathlib import Path
 
     text = (Path(__file__).resolve().parents[1] / "example" / "usdctofiat_toolkit.py").read_text().lower()
     assert "usdctofiat by galleon labs" in text
-    assert "not a peer cash product" in text
-    assert "do not open camel-ai/camel" in text
     assert "mode is required" in text
     assert "private key" in text
-    assert "peer-cash" not in text

@@ -1,7 +1,6 @@
-"""USDCtoFiat Dify provider. Galleon Labs. Not Peer Cash.
+"""USDCtoFiat Dify provider by Galleon Labs.
 
-No credentials. No private keys. Sideload draft — do not open
-langgenius/dify-plugins from this tree.
+No credentials or private keys are required.
 """
 
 from __future__ import annotations
@@ -10,7 +9,7 @@ from typing import Any
 
 try:
     from dify_plugin import ToolProvider
-except ImportError:  # draft-only
+except ImportError:  # standalone reference fallback
 
     class ToolProvider:  # type: ignore[no-redef]
         pass

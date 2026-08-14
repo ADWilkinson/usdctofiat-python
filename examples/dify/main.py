@@ -1,13 +1,10 @@
-"""Dify plugin entry. USDCtoFiat by Galleon Labs. Not a Peer Cash product.
-
-Sideload draft. Do not open langgenius/dify-plugins from this tree.
-"""
+"""Dify plugin entry for USDCtoFiat by Galleon Labs."""
 
 from __future__ import annotations
 
 try:
     from dify_plugin import DifyPluginEnv, Plugin
-except ImportError:  # draft-only — real sideload needs dify_plugin installed
+except ImportError:  # standalone reference fallback
 
     class DifyPluginEnv:  # type: ignore[no-redef]
         def __init__(self, **kwargs):
@@ -18,7 +15,7 @@ except ImportError:  # draft-only — real sideload needs dify_plugin installed
             self.env = env
 
         def run(self) -> None:
-            raise RuntimeError("dify_plugin is not installed; this is a sideload draft")
+            raise RuntimeError("dify_plugin is required to run this plugin")
 
 
 plugin = Plugin(DifyPluginEnv(MAX_REQUEST_TIMEOUT=120))

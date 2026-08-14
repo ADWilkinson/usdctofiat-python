@@ -1,1 +1,1 @@
-"""USDCtoFiat Langflow bundle. Galleon Labs. Not Peer Cash."""
+"""USDCtoFiat Langflow bundle by Galleon Labs."""

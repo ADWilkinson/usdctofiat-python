@@ -1,7 +1,7 @@
-"""UsdctoFiat BaseTool draft for CrewAI.
+"""UsdctoFiat BaseTool reference implementation for CrewAI.
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 Wraps `usdctofiat.cashout(mode="fast"|"best")`, `watch`, `withdraw`/`close`,
 `deposits`, and `estimate`. Mode is required on every priced or mutating call.
@@ -9,15 +9,13 @@ There is no default to Fast or Best. These tools never accept a wallet
 private key — inject a signer callback, or call cashout without one to
 receive unsigned `{to, data, value, chainId}` txs.
 
-This file is a draft for a future PR to crewAIInc/crewAI
-(`lib/crewai-tools/src/crewai_tools/tools/usdctofiat_tool/usdctofiat_tool.py`).
-It is not a first-party CrewAI tool. Do not open that PR while the external
-SDK-host cap is full.
+This reference implementation maps to
+`lib/crewai-tools/src/crewai_tools/tools/usdctofiat_tool/usdctofiat_tool.py`.
 
 When copied upstream:
     from crewai_tools import UsdctoFiatCashoutTool
     # extra: crewai-tools[usdctofiat] = ["usdctofiat"]
-    # Remove the draft-only BaseTool / pydantic fallbacks below.
+    # Remove the standalone BaseTool / pydantic fallbacks below.
 """
 
 from __future__ import annotations
@@ -27,7 +25,7 @@ from typing import Any, Callable, Optional
 
 try:
     from crewai.tools import BaseTool
-except ImportError:  # draft-only — delete this branch in the crewAIInc/crewAI copy
+except ImportError:  # standalone reference fallback
     class BaseTool:  # type: ignore[no-redef]
         name: str = ""
         description: str = ""
@@ -46,7 +44,7 @@ except ImportError:  # draft-only — delete this branch in the crewAIInc/crewAI
 
 try:
     from pydantic import BaseModel, ConfigDict, Field
-except ImportError:  # draft-only
+except ImportError:  # standalone reference fallback
     class BaseModel:  # type: ignore[no-redef]
         def __init__(self, **kwargs: Any) -> None:
             for key, value in kwargs.items():
@@ -129,7 +127,7 @@ class UsdctoFiatOwnerSchema(BaseModel):
 
 
 class _UsdctoFiatBase(BaseTool):
-    """Shared construction. Galleon Labs. Not Peer Cash."""
+    """Shared construction for USDCtoFiat tools."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
     signer: Optional[Callable[[Any], Any]] = None
@@ -153,7 +151,7 @@ class UsdctoFiatCashoutTool(_UsdctoFiatBase):
     """Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.
 
     mode is required. There is no default.
-    - fast: 0% spread / 0 bps. We earn TOFIAT.
+    - fast: Live market pricing with 0% spread / 0 bps.
     - best: Delegate, 10 bps.
 
     If a signer was injected, unsigned txs are submitted and the deposit
@@ -165,7 +163,7 @@ class UsdctoFiatCashoutTool(_UsdctoFiatBase):
     name: str = "usdctofiat_cashout"
     description: str = (
         "Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. "
-        "Built on the public Peer/ZKP2P protocol. Not a Peer Cash product. "
+        "Built on the public Peer/ZKP2P protocol. "
         'mode is required: "fast" (0% / TOFIAT) or "best" (Delegate, 10 bps). '
         "Never pass a wallet private key."
     )
@@ -201,7 +199,7 @@ class UsdctoFiatEstimateTool(_UsdctoFiatBase):
     name: str = "usdctofiat_estimate"
     description: str = (
         "Estimate a USDCtoFiat cash-out. Not a locked quote. "
-        'mode is required: "fast" (0 bps) or "best" (10 bps). Galleon Labs. Not Peer Cash.'
+        'mode is required: "fast" (0 bps) or "best" (10 bps).'
     )
     args_schema: type[BaseModel] = UsdctoFiatEstimateSchema
 
@@ -216,7 +214,7 @@ class UsdctoFiatWatchTool(_UsdctoFiatBase):
     """Watch a USDCtoFiat deposit by id (indexer snapshot)."""
 
     name: str = "usdctofiat_watch"
-    description: str = "Watch a USDCtoFiat deposit by id. Galleon Labs. Not Peer Cash."
+    description: str = "Watch a USDCtoFiat deposit by id."
     args_schema: type[BaseModel] = UsdctoFiatDepositSchema
 
     def _run(self, deposit_id: str) -> str:
@@ -231,7 +229,7 @@ class UsdctoFiatWithdrawTool(_UsdctoFiatBase):
     """Withdraw / close a USDCtoFiat deposit. Alias: close."""
 
     name: str = "usdctofiat_withdraw"
-    description: str = "Withdraw or close a USDCtoFiat deposit. Galleon Labs. Not Peer Cash."
+    description: str = "Withdraw or close a USDCtoFiat deposit."
     args_schema: type[BaseModel] = UsdctoFiatDepositSchema
 
     def _run(self, deposit_id: str) -> str:
@@ -249,7 +247,7 @@ class UsdctoFiatDepositsTool(_UsdctoFiatBase):
     """List USDCtoFiat deposits for an owner address."""
 
     name: str = "usdctofiat_deposits"
-    description: str = "List USDCtoFiat deposits for an owner on Base. Galleon Labs. Not Peer Cash."
+    description: str = "List USDCtoFiat deposits for an owner on Base."
     args_schema: type[BaseModel] = UsdctoFiatOwnerSchema
 
     def _run(self, owner: str) -> str:

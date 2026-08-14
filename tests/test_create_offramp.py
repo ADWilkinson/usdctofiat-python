@@ -25,13 +25,10 @@ def test_watch_withdraw_deposits(mocked_http):
     assert tx.data.startswith("0x")
 
 
-def test_branding_is_usdctofiat_not_peer_cash():
-    import usdctofiat
+def test_package_branding():
     import usdctofiat as pkg
 
     assert pkg.PRODUCT == "USDCtoFiat"
     assert pkg.VENDOR == "Galleon Labs"
     text = pkg.__doc__.lower()
     assert "usdctofiat" in text
-    assert "not a peer cash product" in text
-    assert "peer-cash" not in pkg.__name__

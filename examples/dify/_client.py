@@ -1,7 +1,7 @@
-"""Shared USDCtoFiat client helpers for the Dify sideload draft.
+"""Shared USDCtoFiat client helpers for the Dify plugin.
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. No private keys. Mode is required.
+The plugin accepts no private keys, and mode is required.
 """
 
 from __future__ import annotations

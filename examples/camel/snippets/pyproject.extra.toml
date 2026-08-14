@@ -1,4 +1,4 @@
-# Paste into camel-ai/camel extras when the host PR opens.
+# CAMEL optional-dependency entry.
 # Not an installable extra of *this* repo.
 
 # [project.optional-dependencies]

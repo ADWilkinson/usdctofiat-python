@@ -1,7 +1,7 @@
-"""UsdctoFiatTools — Agno toolkit draft.
+"""UsdctoFiatTools — Agno toolkit reference implementation.
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 Wraps `usdctofiat.cashout(mode="fast"|"best")`, `watch`, `withdraw`/`close`,
 `deposits`, and `estimate`. Mode is required on every priced or mutating call.
@@ -9,14 +9,12 @@ There is no default to Fast or Best. This toolkit never accepts a wallet
 private key — inject a signer callback, or call cashout without one to
 receive unsigned `{to, data, value, chainId}` txs.
 
-This file is a draft for a future PR to agno-agi/agno
-(`libs/agno/agno/tools/usdctofiat.py`). It is not a first-party Agno tool.
-Do not open that PR while the external SDK-host cap is full.
+This reference implementation maps to `libs/agno/agno/tools/usdctofiat.py`.
 
 When copied upstream:
     from agno.tools.usdctofiat import UsdctoFiatTools
     # extra: agno[usdctofiat] = ["usdctofiat"]
-    # Remove the draft-only Toolkit fallback below.
+    # Remove the standalone Toolkit fallback below.
 """
 
 from __future__ import annotations
@@ -26,7 +24,7 @@ from typing import Any, Callable, List, Optional
 
 try:
     from agno.tools import Toolkit
-except ImportError:  # draft-only — delete this branch in the agno-agi/agno copy
+except ImportError:  # standalone reference fallback
     class Toolkit:  # type: ignore[no-redef]
         def __init__(self, name: str, tools: Optional[List[Any]] = None, **kwargs: Any) -> None:
             self.name = name
@@ -51,7 +49,7 @@ _BANNED_KEY_KWARGS = (
 
 
 class UsdctoFiatTools(Toolkit):
-    """USDCtoFiat tools for Agno agents. Galleon Labs. Not Peer Cash.
+    """USDCtoFiat tools for Agno agents by Galleon Labs.
 
     Args:
         signer: Optional callback `(unsigned_tx) -> hash | {hash, deposit_id}`.
@@ -131,7 +129,7 @@ class UsdctoFiatTools(Toolkit):
         """Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.
 
         mode is required. There is no default.
-        - fast: 0% spread / 0 bps. We earn TOFIAT.
+        - fast: Live market pricing with 0% spread / 0 bps.
         - best: Delegate, 10 bps.
 
         If a signer was injected, unsigned txs are submitted and the deposit

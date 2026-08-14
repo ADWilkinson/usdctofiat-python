@@ -1,7 +1,7 @@
-"""UsdctoFiatToolkit — CAMEL toolkit draft.
+"""UsdctoFiatToolkit — CAMEL toolkit reference implementation.
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 Wraps `usdctofiat.cashout(mode="fast"|"best")`, `watch`, `withdraw`/`close`,
 `deposits`, and `estimate`. Mode is required on every priced or mutating call.
@@ -9,14 +9,12 @@ There is no default to Fast or Best. This toolkit never accepts a wallet
 private key — inject a signer callback, or call cashout without one to
 receive unsigned `{to, data, value, chainId}` txs.
 
-This file is a draft for a future PR to camel-ai/camel
-(`camel/toolkits/usdctofiat_toolkit.py`). It is not a first-party CAMEL
-toolkit. Do not open that PR while the external SDK-host cap is full.
+This reference implementation maps to `camel/toolkits/usdctofiat_toolkit.py`.
 
 When copied upstream:
     from camel.toolkits import UsdctoFiatToolkit
     # @dependencies_required("usdctofiat")
-    # Remove the draft-only BaseToolkit / FunctionTool fallbacks below.
+    # Remove the standalone BaseToolkit / FunctionTool fallbacks below.
 """
 
 from __future__ import annotations
@@ -28,7 +26,7 @@ try:
     from camel.toolkits.base import BaseToolkit
     from camel.toolkits.function_tool import FunctionTool
     from camel.utils import dependencies_required
-except ImportError:  # draft-only — delete this branch in the camel-ai/camel copy
+except ImportError:  # standalone reference fallback
     class BaseToolkit:  # type: ignore[no-redef]
         def __init__(self, timeout: Optional[float] = None) -> None:
             self.timeout = timeout
@@ -61,7 +59,7 @@ _BANNED_KEY_KWARGS = (
 
 
 class UsdctoFiatToolkit(BaseToolkit):
-    r"""USDCtoFiat toolkit for CAMEL agents. Galleon Labs. Not Peer Cash.
+    r"""USDCtoFiat toolkit for CAMEL agents by Galleon Labs.
 
     Args:
         signer: Optional callback ``(unsigned_tx) -> hash | {hash, deposit_id}``.
@@ -120,7 +118,7 @@ class UsdctoFiatToolkit(BaseToolkit):
         r"""Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.
 
         mode is required. There is no default.
-        - fast: 0% spread / 0 bps. We earn TOFIAT.
+        - fast: Live market pricing with 0% spread / 0 bps.
         - best: Delegate, 10 bps.
 
         If a signer was injected, unsigned txs are submitted and the deposit

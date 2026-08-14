@@ -2,7 +2,7 @@
 
 USDCtoFiat by Galleon Labs. Python client for non-custodial USDC-to-fiat cash-out on Base.
 
-Built on the public Peer/ZKP2P protocol. Not a Peer Cash product. Not Peerlytics.
+Built on the public Peer/ZKP2P protocol.
 
 https://usdctofiat.xyz · https://usdctofiat.xyz/developers
 
@@ -16,7 +16,7 @@ This repository is the source. A PyPI release is a separate publish step and is 
 
 ## Cash out
 
-`mode` is required. Fast is 0% spread / 0 bps and earns `TOFIAT`. Best is Delegate at 10 bps.
+`mode` is required. Fast uses live market pricing with 0% spread. Best uses Delegate pricing at 10 bps.
 
 The client never takes a wallet private key. Pass a signer callback that submits an unsigned tx, or call `prepare()` and sign in the host.
 
@@ -75,19 +75,17 @@ There is no `POST /cashout`. Deposit creation is onchain.
 
 HTTP: `https://api.zkp2p.xyz` and `https://indexer.zkp2p.xyz/v1/graphql`.
 
-## Host toolkit drafts (local only)
+## Framework integrations
 
-Copy-ready scaffolds live under `examples/`. They wrap `usdctofiat.cashout(mode="fast"|"best")`. Mode is required. No private-key constructor. Do **not** open an upstream host PR or marketplace listing from this tree. External cap is 2/2 (AgentKit #1442, Bankr #639).
+Reference integrations live under `examples/`. They wrap `usdctofiat.cashout(mode="fast"|"best")`, require an explicit mode, and keep wallet signing in the host runtime.
 
-| Draft | Shape | Future unlock | Do not open |
-| --- | --- | --- | --- |
-| [`examples/agno/`](examples/agno/) | `UsdctoFiatTools` | in-tree `agno-agi/agno` when a slot frees | `agno-agi/agno` |
-| [`examples/crewai/`](examples/crewai/) | `BaseTool` | in-tree `crewAIInc/crewAI` `lib/crewai-tools` | `crewAIInc/crewAI` |
-| [`examples/dify/`](examples/dify/) | sideload `.difypkg` | own-repo sideload now; marketplace later | `langgenius/dify-plugins` |
-| [`examples/camel/`](examples/camel/) | `BaseToolkit` | in-tree `camel-ai/camel` `camel/toolkits/` | `camel-ai/camel` |
-| [`examples/langflow/`](examples/langflow/) | `lfx-usdctofiat` pip extension | PyPI then `pip install lfx-usdctofiat` (no host PR) | `langflow-ai/langflow` |
-
-No Hermes adapter or `hermes-plugin-index` PR from this repo.
+| Example | Integration |
+| --- | --- |
+| [`examples/agno/`](examples/agno/) | Agno `UsdctoFiatTools` toolkit |
+| [`examples/crewai/`](examples/crewai/) | CrewAI `BaseTool` family |
+| [`examples/dify/`](examples/dify/) | Dify tool plugin |
+| [`examples/camel/`](examples/camel/) | CAMEL `BaseToolkit` |
+| [`examples/langflow/`](examples/langflow/) | Langflow `lfx-usdctofiat` extension |
 
 ## Licence
 

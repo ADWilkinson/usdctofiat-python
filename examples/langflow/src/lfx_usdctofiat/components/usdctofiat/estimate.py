@@ -1,4 +1,4 @@
-"""USDCtoFiat estimate component. Galleon Labs. Not Peer Cash. Mode required."""
+"""USDCtoFiat estimate component. Mode required."""
 
 from __future__ import annotations
 
@@ -10,8 +10,7 @@ class UsdctoFiatEstimateComponent(Component):
     display_name = "USDCtoFiat estimate"
     description = (
         "Estimate a USDCtoFiat cash-out. Not a locked quote. "
-        "mode is required: fast (0 bps) or best (10 bps). "
-        "USDCtoFiat by Galleon Labs. Not a Peer Cash product."
+        "mode is required: fast (0 bps) or best (10 bps)."
     )
     icon = "chart"
     name = "UsdctoFiatEstimate"

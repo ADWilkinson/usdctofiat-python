@@ -2,7 +2,7 @@
 USDCtoFiat Tools — USDC to fiat cash-out on Base
 
 USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-Not a Peer Cash product. https://usdctofiat.xyz/developers
+Docs: https://usdctofiat.xyz/developers
 
 UsdctoFiatTools is a small toolkit (<6 functions) so it uses enable_ flags.
 mode is required on cashout and estimate: "fast" (0% / TOFIAT) or
@@ -12,8 +12,7 @@ The toolkit does not accept a wallet private key. Inject a signer callback
 that submits unsigned {to, data, value, chainId} txs, or omit the signer
 and cashout() returns the unsigned prepare payload for the host to sign.
 
-This cookbook is a draft for cookbook/91_tools/usdctofiat_tools.py.
-Do not open agno-agi/agno until a host slot is free.
+This cookbook maps to `cookbook/91_tools/usdctofiat_tools.py`.
 
 Run: `uv pip install usdctofiat` (or `pip install -e .` from this repo)
      `uv pip install agno` when you actually run the agent.
@@ -21,7 +20,7 @@ Run: `uv pip install usdctofiat` (or `pip install -e .` from this repo)
 
 from agno.agent import Agent
 
-# Draft import (this repo). Upstream: from agno.tools.usdctofiat import UsdctoFiatTools
+# Local reference import. Upstream: from agno.tools.usdctofiat import UsdctoFiatTools
 import sys
 from pathlib import Path
 
@@ -43,12 +42,12 @@ agent = Agent(
     tools=[UsdctoFiatTools(signer=signer)],
     description=(
         "You help users cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. "
-        "Built on the public Peer/ZKP2P protocol. Not a Peer Cash product."
+        "Built on the public Peer/ZKP2P protocol."
     ),
     instructions=[
         "Always ask the user to choose mode=fast (0% / TOFIAT) or mode=best (Delegate, 10 bps).",
         "Never invent a mode default. Never ask for or accept a wallet private key.",
-        "Fast earns TOFIAT. Best attaches the Delegate rate manager at 10 bps.",
+        "Fast uses live market pricing with 0% spread. Best uses Delegate pricing at 10 bps.",
     ],
     markdown=True,
 )

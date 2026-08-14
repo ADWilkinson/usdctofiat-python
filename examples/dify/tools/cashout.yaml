@@ -10,14 +10,14 @@ description:
   human:
     en_US: >-
       Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs.
-      Built on the public Peer/ZKP2P protocol. Not a Peer Cash product.
+      Built on the public Peer/ZKP2P protocol.
       mode is required. Returns unsigned txs. No private keys.
-    zh_Hans: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
-    ja_JP: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
-    pt_BR: USDCtoFiat cashout. mode is required. Not a Peer Cash product.
+    zh_Hans: USDCtoFiat cashout. mode is required.
+    ja_JP: USDCtoFiat cashout. mode is required.
+    pt_BR: USDCtoFiat cashout. mode is required.
   llm: >-
-    Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. Not a Peer Cash
-    product. mode is required: fast (0% / TOFIAT) or best (Delegate, 10 bps).
+    Cash out Base USDC to fiat via USDCtoFiat by Galleon Labs. mode is required:
+    fast (0% spread) or best (Delegate, 10 bps).
     Never ask for a wallet private key. Returns unsigned {to, data, value, chainId} txs.
 parameters:
   - name: mode

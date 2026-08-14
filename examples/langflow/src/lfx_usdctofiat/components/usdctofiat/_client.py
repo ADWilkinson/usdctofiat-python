@@ -1,6 +1,6 @@
 """Shared USDCtoFiat client for Langflow components.
 
-USDCtoFiat by Galleon Labs. Not a Peer Cash product. No private keys.
+USDCtoFiat by Galleon Labs. No private keys.
 """
 
 from __future__ import annotations

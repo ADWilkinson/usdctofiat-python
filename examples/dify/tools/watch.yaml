@@ -5,7 +5,7 @@ identity:
     en_US: USDCtoFiat watch
 description:
   human:
-    en_US: Watch a USDCtoFiat deposit by id. Galleon Labs. Not a Peer Cash product.
+    en_US: Watch a USDCtoFiat deposit by id.
   llm: Watch a USDCtoFiat deposit by id (indexer snapshot).
 parameters:
   - name: deposit_id

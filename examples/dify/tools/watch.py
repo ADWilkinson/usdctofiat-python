@@ -7,7 +7,7 @@ from typing import Any
 try:
     from dify_plugin import Tool
     from dify_plugin.entities.tool import ToolInvokeMessage
-except ImportError:  # draft-only
+except ImportError:  # standalone reference fallback
     class ToolInvokeMessage:  # type: ignore[no-redef]
         def __init__(self, payload: Any) -> None:
             self.payload = payload

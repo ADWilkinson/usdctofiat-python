@@ -1,17 +1,10 @@
-# Langflow pip-extension draft (`lfx-usdctofiat`)
+# Langflow pip extension (`lfx-usdctofiat`)
 
-USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol. Not a Peer Cash product.
+USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
 
-This folder is a **local `lfx-usdctofiat` pip-extension-shaped draft**
-(`extension.json` + `src/lfx_usdctofiat/components/usdctofiat/`). After a
-PyPI publish of this extra (held), operators install with
+This folder contains the `lfx-usdctofiat` extension
+(`extension.json` + `src/lfx_usdctofiat/components/usdctofiat/`). After publishing to PyPI, operators install with
 `pip install lfx-usdctofiat` and Langflow discovers the bundle at startup.
-That is the **no-host-PR path**.
-
-Do **not** open a PR against [`langflow-ai/langflow`](https://github.com/langflow-ai/langflow)
-from this tree. An in-tree bundle PR counts at the external cap. External cap
-is 2/2 (AgentKit #1442, Bankr #639). Do not publish this extra to PyPI from
-this commit.
 
 ## What this wraps
 
@@ -21,7 +14,7 @@ There is no private-key input — the component returns unsigned
 `{to, data, value, chainId}` txs for the host to sign.
 `create_offramp` locks TOFIAT + galleonlabs.
 
-## After PyPI (not this commit)
+## Install
 
 ```bash
 pip install lfx-usdctofiat
@@ -33,16 +26,7 @@ langflow run
 
 ## Copy map
 
-| This draft | Destination |
+| Reference file | Package destination |
 | --- | --- |
-| this folder | own `lfx-usdctofiat` package (PyPI, later) |
+| this folder | `lfx-usdctofiat` package |
 | `src/lfx_usdctofiat/components/usdctofiat/` | same, after `lfx extension init` layout |
-| in-tree Langflow bundle | **do not** — that is a host PR |
-
-## Not this folder
-
-- No PR to `langflow-ai/langflow`
-- No Agno / CrewAI / Dify / CAMEL / Hermes host PRs
-- No PyPI publish
-- No Peer Cash branding
-- No private keys

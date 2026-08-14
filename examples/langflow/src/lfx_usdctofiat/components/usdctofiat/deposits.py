@@ -1,4 +1,4 @@
-"""USDCtoFiat deposits component. Galleon Labs. Not Peer Cash."""
+"""USDCtoFiat deposits component."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from ._lfx import Component, Message, MessageTextInput, Output
 
 class UsdctoFiatDepositsComponent(Component):
     display_name = "USDCtoFiat deposits"
-    description = "List USDCtoFiat deposits for an owner on Base. Galleon Labs. Not a Peer Cash product."
+    description = "List USDCtoFiat deposits for an owner on Base."
     name = "UsdctoFiatDeposits"
     inputs = [MessageTextInput(name="owner", display_name="Owner", info="0x depositor on Base.", required=True)]
     outputs = [Output(display_name="Deposits", name="deposits", method="build_deposits")]

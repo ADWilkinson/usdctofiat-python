@@ -9,10 +9,10 @@ identity:
   description:
     en_US: >-
       USDCtoFiat by Galleon Labs. Built on the public Peer/ZKP2P protocol.
-      Not a Peer Cash product. mode is required. No private keys.
-    zh_Hans: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
-    ja_JP: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
-    pt_BR: USDCtoFiat by Galleon Labs. Not a Peer Cash product.
+      mode is required. No private keys.
+    zh_Hans: USDCtoFiat by Galleon Labs.
+    ja_JP: USDCtoFiat by Galleon Labs.
+    pt_BR: USDCtoFiat by Galleon Labs.
   icon: icon.svg
   tags:
     - finance
