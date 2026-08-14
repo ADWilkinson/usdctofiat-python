@@ -75,6 +75,13 @@ There is no `POST /cashout`. Deposit creation is onchain.
 
 HTTP: `https://api.zkp2p.xyz` and `https://indexer.zkp2p.xyz/v1/graphql`.
 
+## Agno toolkit draft
+
+A local `UsdctoFiatTools` draft lives in [`examples/agno/`](examples/agno/).
+It is a copy-ready scaffold for a future `agno-agi/agno` PR (`agno[usdctofiat]`).
+It is not an installable Agno first-party tool. Do not open that host PR
+while the external cap is full. Mode is required. No private-key constructor.
+
 ## Licence
 
 MIT

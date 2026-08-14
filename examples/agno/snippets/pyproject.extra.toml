@@ -1,0 +1,7 @@
+# Paste into agno-agi/agno libs/agno/pyproject.toml when the host PR opens.
+# Not an installable extra of *this* repo.
+
+# [project.optional-dependencies]
+usdctofiat = ["usdctofiat"]
+
+# Also add "agno[usdctofiat]" under the aggregated `tools` extra.
