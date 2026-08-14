@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "usdctofiat"
+version = "0.1.0"
+description = "USDCtoFiat Python client. cashout(mode=fast|best) on Base. Galleon Labs."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Galleon Labs" }]
+keywords = ["usdctofiat", "usdc", "offramp", "base", "galleon"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "httpx>=0.27",
+    "eth-abi>=5",
+    "eth-utils>=5",
+    "pycryptodome>=3.20",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "respx>=0.22"]
+
+[project.urls]
+Homepage = "https://usdctofiat.xyz"
+Documentation = "https://usdctofiat.xyz/developers"
+Repository = "https://github.com/ADWilkinson/usdctofiat-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "examples/agno/tests"]
+pythonpath = ["examples/agno"]
+addopts = "-q"
