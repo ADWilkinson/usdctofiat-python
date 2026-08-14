@@ -1,0 +1,11 @@
+
+{
+  "request": {
+    "processorName": "revolut",
+    "payeeData": {"offchainId": "alice"},
+    "chainId": 8453
+  },
+  "response": {
+    "payeeDetailsHash": "0x1111111111111111111111111111111111111111111111111111111111111111"
+  }
+}
