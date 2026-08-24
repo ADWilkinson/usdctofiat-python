@@ -2,10 +2,22 @@
 import httpx
 import pytest
 import respx
+from eth_abi import decode
+from eth_utils import decode_hex
 
 from usdctofiat import ModeRequired, SignerRequired, cashout, create_offramp
 from usdctofiat.attribution import parse_erc8021
-from usdctofiat.constants import CHAIN_ID, CURATOR_URL, ESCROW_V2, MAKERS_CREATE_PATH, USDC
+from usdctofiat.calldata import CREATE_DEPOSIT_TUPLE
+from usdctofiat.constants import (
+    CHAIN_ID,
+    CURATOR_URL,
+    ERC8021_MARKER,
+    ESCROW_V2,
+    INTENT_GUARDIAN,
+    MAKERS_CREATE_PATH,
+    USDC,
+    ZERO_ADDRESS,
+)
 
 
 def test_mode_required(mocked_http):
@@ -50,6 +62,22 @@ def test_fast_prepare_path_mocked(mocked_http):
     calls = [str(c.request.url) for c in mocked_http.calls]
     assert any("/v2/makers/create" in u for u in calls)
     assert all("/cashout" not in u for u in calls)
+
+
+@pytest.mark.parametrize("mode", ["fast", "best"])
+def test_prepare_inherits_protocol_intent_guardian(mocked_http, mode):
+    prepared = create_offramp().prepare(
+        mode=mode,
+        amount="100",
+        currency="EUR",
+        platform="revolut",
+        payee="alice",
+    )
+    raw = decode_hex(prepared.txs[1].data)
+    payload = raw[4 : raw.rfind(ERC8021_MARKER)]
+    guardian = decode([CREATE_DEPOSIT_TUPLE], payload)[0][7]
+    assert guardian.lower() == INTENT_GUARDIAN.lower()
+    assert guardian.lower() != ZERO_ADDRESS.lower()
 
 
 def test_best_is_same_deposit_plus_delegate_hook(mocked_http):
