@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "usdctofiat"
-version = "0.1.0"
+dynamic = ["version"]
 description = "USDCtoFiat Python client. cashout(mode=fast|best) on Base. Galleon Labs."
 readme = "README.md"
 license = { text = "MIT" }
@@ -32,6 +32,9 @@ dev = ["pytest>=8", "respx>=0.22"]
 Homepage = "https://usdctofiat.xyz"
 Documentation = "https://usdctofiat.xyz/developers"
 Repository = "https://github.com/ADWilkinson/usdctofiat-python"
+
+[tool.setuptools.dynamic]
+version = { attr = "usdctofiat.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

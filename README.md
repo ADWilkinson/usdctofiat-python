@@ -12,7 +12,9 @@ https://usdctofiat.xyz · https://usdctofiat.xyz/developers
 pip install usdctofiat
 ```
 
-This repository is the source. A PyPI release is a separate publish step and is not part of this scaffold.
+This repository is the source. Releases are cut by pushing a `v*` tag, which builds
+the sdist and wheel and publishes them to PyPI via Trusted Publishing after the `pypi`
+environment approval. See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Cash out
 
