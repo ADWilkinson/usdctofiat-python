@@ -122,3 +122,19 @@ def test_extract_deposit_id_from_receipt_and_log():
     receipt = {"logs": [{"topics": [DEPOSIT_RECEIVED_TOPIC, hex(7)]}]}
     assert extract_deposit_id(receipt) == "7"
     assert extract_deposit_id(None) is None
+
+
+def test_extract_deposit_id_from_bytes_topics():
+    """web3.py hands back HexBytes topics; both topic0 and the id must decode."""
+    from usdctofiat.calldata import DEPOSIT_RECEIVED_TOPIC
+
+    class HexBytes(bytes):  # web3.py's type, minus the dependency
+        def __repr__(self) -> str:
+            return f"HexBytes('0x{self.hex()}')"
+
+        __str__ = __repr__
+
+    topic0 = HexBytes(bytes.fromhex(DEPOSIT_RECEIVED_TOPIC[2:]))
+    for topic1 in (HexBytes((7).to_bytes(32, "big")), (7).to_bytes(32, "big"), 7, hex(7)):
+        receipt = {"logs": [{"topics": [topic0, topic1]}]}
+        assert extract_deposit_id(receipt) == "7"
