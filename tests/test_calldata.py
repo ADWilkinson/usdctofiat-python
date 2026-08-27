@@ -14,6 +14,7 @@ from usdctofiat.calldata import (
     encode_set_rate_manager,
     encode_withdraw,
     extract_deposit_id,
+    extract_tx_hash,
     normalize_payee,
     parse_usdc_amount,
 )
@@ -138,3 +139,22 @@ def test_extract_deposit_id_from_bytes_topics():
     for topic1 in (HexBytes((7).to_bytes(32, "big")), (7).to_bytes(32, "big"), 7, hex(7)):
         receipt = {"logs": [{"topics": [topic0, topic1]}]}
         assert extract_deposit_id(receipt) == "7"
+
+
+def test_extract_tx_hash_reads_web3_receipt_keys():
+    """web3.py keys the hash transactionHash and hands back HexBytes."""
+
+    class HexBytes(bytes):  # web3.py's type, minus the dependency
+        def __repr__(self) -> str:
+            return f"HexBytes('0x{self.hex()}')"
+
+        __str__ = __repr__
+
+    expected = "0x" + "ab" * 32
+    raw = bytes.fromhex("ab" * 32)
+    for value in (HexBytes(raw), raw, expected):
+        for key in ("tx_hash", "hash", "txHash", "transactionHash", "transaction_hash"):
+            assert extract_tx_hash({key: value}) == expected
+    assert extract_tx_hash(expected) == expected
+    assert extract_tx_hash({"status": 1}) == ""
+    assert extract_tx_hash(None) == ""

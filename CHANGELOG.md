@@ -9,6 +9,11 @@
 - `extract_deposit_id` normalises receipt topics before decoding, so a web3.py
   receipt (`HexBytes` topics) yields the deposit id instead of raising
   `ValueError`. `cashout()` crashed on any signer that returned a real receipt.
+- `cashout()` and `withdraw()` read the tx hash through `extract_tx_hash`, which
+  accepts `transactionHash` / `transaction_hash` alongside `tx_hash` / `hash` /
+  `txHash` and decodes `HexBytes` values. A web3.py receipt previously yielded
+  `tx_hash = ""` and an empty `tx_hashes`, and a `HexBytes` hash stringified to
+  `"HexBytes('0x…')"` instead of a hash. (#9)
 - Version is single-sourced from `usdctofiat.__version__`; `pyproject.toml`
   derives it.
 - Releases are cut by pushing a `v*` tag, which runs `.github/workflows/release.yml`

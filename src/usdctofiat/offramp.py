@@ -12,6 +12,7 @@ from .calldata import (
     create_deposit_tx,
     delegate_hook,
     extract_deposit_id,
+    extract_tx_hash,
     normalize_payee,
     parse_usdc_amount,
     set_rate_manager_tx,
@@ -134,14 +135,11 @@ class Offramp:
         last: str | None = None
         for tx in prepared.txs:
             result = signer(tx)
-            if isinstance(result, str):
-                last = result
-                hashes.append(result)
-            else:
-                last = str(result.get("tx_hash") or result.get("hash") or result.get("txHash") or "")
-                if last:
-                    hashes.append(last)
-                deposit_id = deposit_id or extract_deposit_id(result)
+            tx_hash = extract_tx_hash(result)
+            if tx_hash:
+                last = tx_hash
+                hashes.append(tx_hash)
+            deposit_id = deposit_id or extract_deposit_id(result)
         return CashoutResult(
             deposit_id=deposit_id,
             tx_hash=last,
@@ -177,8 +175,7 @@ class Offramp:
         tx = withdraw_tx(int(deposit_id), attribution=self.attribution)
         if signer is None:
             return tx
-        result = signer(tx)
-        tx_hash = result if isinstance(result, str) else str(result.get("tx_hash") or result.get("hash") or "")
+        tx_hash = extract_tx_hash(signer(tx))
         return CashoutResult(deposit_id=str(deposit_id), tx_hash=tx_hash, mode="fast", tx_hashes=[tx_hash] if tx_hash else [])
 
     close = withdraw

@@ -270,18 +270,40 @@ def extract_deposit_id(receipt: object) -> str | None:
         topics = log.get("topics") or []
         if not topics:
             continue
-        if _topic_hex(topics[0]).lower() == DEPOSIT_RECEIVED_TOPIC.lower() and len(topics) > 1:
-            return str(int(_topic_hex(topics[1]), 16))
+        if _receipt_hex(topics[0]).lower() == DEPOSIT_RECEIVED_TOPIC.lower() and len(topics) > 1:
+            return str(int(_receipt_hex(topics[1]), 16))
     return None
 
 
-def _topic_hex(topic: object) -> str:
-    """Receipt topics are HexBytes on web3.py, plain bytes, ints or 0x strings elsewhere."""
-    if isinstance(topic, bytes):
-        return "0x" + topic.hex()
-    if isinstance(topic, int):
-        return hex(topic)
-    return str(topic)
+TX_HASH_KEYS = ("tx_hash", "hash", "txHash", "transactionHash", "transaction_hash")
+
+
+def extract_tx_hash(result: object) -> str:
+    """Best-effort tx hash from a signer return. web3.py keys it transactionHash
+    and hands back HexBytes; other hosts return a plain 0x string or tx_hash."""
+    if result is None:
+        return ""
+    if isinstance(result, (str, bytes)):
+        return _receipt_hex(result)
+    if not hasattr(result, "get"):
+        return ""
+    for key in TX_HASH_KEYS:
+        value = result.get(key)
+        if value in (None, ""):
+            continue
+        text = _receipt_hex(value)
+        if text:
+            return text
+    return ""
+
+
+def _receipt_hex(value: object) -> str:
+    """Receipt fields are HexBytes on web3.py, plain bytes, ints or 0x strings elsewhere."""
+    if isinstance(value, bytes):
+        return "0x" + value.hex()
+    if isinstance(value, int):
+        return hex(value)
+    return str(value)
 
 
 def _bytes32(value: str | bytes) -> str:
