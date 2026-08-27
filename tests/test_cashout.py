@@ -129,3 +129,50 @@ def test_curator_only_makers_create(mocked_http, makers_fixture):
     assert str(request.url) == f"{CURATOR_URL}{MAKERS_CREATE_PATH}"
     assert b"alice" in request.content
     assert b"revolut" in request.content
+
+
+def test_cashout_keeps_tx_hash_from_a_web3_receipt(mocked_http):
+    """A real web3.py receipt keys the hash transactionHash, not hash/tx_hash."""
+    from usdctofiat.calldata import DEPOSIT_RECEIVED_TOPIC
+
+    class HexBytes(bytes):  # web3.py's type, minus the dependency
+        def __repr__(self) -> str:
+            return f"HexBytes('0x{self.hex()}')"
+
+        __str__ = __repr__
+
+    def signer(tx):
+        return {
+            "transactionHash": HexBytes(bytes.fromhex("ab" * 32)),
+            "status": 1,
+            "logs": [
+                {
+                    "topics": [
+                        HexBytes(bytes.fromhex(DEPOSIT_RECEIVED_TOPIC[2:])),
+                        HexBytes((7).to_bytes(32, "big")),
+                    ]
+                }
+            ],
+        }
+
+    result = create_offramp().cashout(
+        mode="fast",
+        amount="10",
+        currency="EUR",
+        platform="revolut",
+        payee="alice",
+        signer=signer,
+    )
+    assert result.deposit_id == "7"
+    assert result.tx_hash == "0x" + "ab" * 32
+    assert result.tx_hashes == ["0x" + "ab" * 32] * 2
+    assert "HexBytes" not in result.as_dict()["tx_hash"]
+
+
+def test_withdraw_accepts_the_same_signer_returns_as_cashout(mocked_http):
+    expected = "0x" + "cd" * 32
+    for result in (expected, {"txHash": expected}, {"transactionHash": bytes.fromhex("cd" * 32)}):
+        closed = create_offramp().withdraw(7, signer=lambda tx, r=result: r)
+        assert closed.tx_hash == expected
+        assert closed.tx_hashes == [expected]
+        assert closed.deposit_id == "7"
