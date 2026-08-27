@@ -6,6 +6,9 @@
   instead of `address(0)`. Deposits created by `0.1.0` encoded
   `intentGuardian = 0x0000000000000000000000000000000000000000`; this restores
   parity with `@usdctofiat/offramp` 8.0.0. (#3, #4)
+- `extract_deposit_id` normalises receipt topics before decoding, so a web3.py
+  receipt (`HexBytes` topics) yields the deposit id instead of raising
+  `ValueError`. `cashout()` crashed on any signer that returned a real receipt.
 - Version is single-sourced from `usdctofiat.__version__`; `pyproject.toml`
   derives it.
 - Releases are cut by pushing a `v*` tag, which runs `.github/workflows/release.yml`

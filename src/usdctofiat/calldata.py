@@ -270,12 +270,18 @@ def extract_deposit_id(receipt: object) -> str | None:
         topics = log.get("topics") or []
         if not topics:
             continue
-        topic0 = topics[0]
-        if isinstance(topic0, bytes):
-            topic0 = "0x" + topic0.hex()
-        if str(topic0).lower() == DEPOSIT_RECEIVED_TOPIC.lower() and len(topics) > 1:
-            return str(int(str(topics[1]), 16))
+        if _topic_hex(topics[0]).lower() == DEPOSIT_RECEIVED_TOPIC.lower() and len(topics) > 1:
+            return str(int(_topic_hex(topics[1]), 16))
     return None
+
+
+def _topic_hex(topic: object) -> str:
+    """Receipt topics are HexBytes on web3.py, plain bytes, ints or 0x strings elsewhere."""
+    if isinstance(topic, bytes):
+        return "0x" + topic.hex()
+    if isinstance(topic, int):
+        return hex(topic)
+    return str(topic)
 
 
 def _bytes32(value: str | bytes) -> str:
