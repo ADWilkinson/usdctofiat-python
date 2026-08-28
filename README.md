@@ -67,6 +67,16 @@ for tx, step in zip(prepared.txs, prepared.steps):
 
 There is no `POST /cashout`. Deposit creation is onchain.
 
+## Currencies
+
+The deposit rate comes from the currency's Chainlink feed on Base at 0 bps, so
+only currencies with a feed are accepted:
+
+`USD` `AUD` `BRL` `CAD` `CHF` `EUR` `GBP` `IDR` `MXN` `NZD` `PHP` `SGD` `TRY` `ZAR`
+
+Anything else raises `ValidationError`. A code with no feed could otherwise be
+encoded onchain at a fixed 1:1 rate.
+
 ## Base mainnet
 
 | | |

@@ -31,6 +31,30 @@ RESERVED_REFERRERS = frozenset({"peer-cash", "zkp2p-cash", "plugin-peer-cash"})
 FAST_SPREAD_BPS = 0
 BEST_MANAGER_FEE_BPS = 10
 DEFAULT_ORACLE_MAX_STALENESS = 86400
+# The oracle sets the price, so the onchain floor is one wei rather than a rate.
+# @usdctofiat/offramp 8.0.0 maps conversionRate "1" to minConversionRate = 1.
+MIN_CONVERSION_RATE = 1
+
+# @zkp2p/sdk@0.12.0 CHAINLINK_ORACLE_FEEDS: code -> (feed, invert).
+# USD is the documented zero-address passthrough (constant 1.0). Every other
+# feed is quoted as USD per unit of fiat, so it inverts to fiat per USDC.
+# Codes absent here have no Base feed and cannot be priced by this client.
+CHAINLINK_ORACLE_FEEDS: dict[str, tuple[str, bool]] = {
+    "USD": (ZERO_ADDRESS, False),
+    "AUD": ("0x46e51b8ca41d709928eda9ae43e42193e6cdf229", True),
+    "BRL": ("0x0b0e64c05083fdf9ed7c5d3d8262c4216efc9394", True),
+    "CAD": ("0xa840145f87572e82519d578b1f36340368a25d5d", True),
+    "CHF": ("0x3a1d6444fb6a402470098e23dad0b7e86e14252f", True),
+    "EUR": ("0xc91d87e81fab8f93699ecf7ee9b44d11e1d53f0f", True),
+    "GBP": ("0xccea6576904c118037695eb71195a5425e69fa15", True),
+    "IDR": ("0x05a6cf213ecc5501a11a08ebefa4a8a60313ef97", True),
+    "MXN": ("0x9e8ee77c76d4fa41306056d1c3196af5da1600bd", True),
+    "NZD": ("0x06bdfe07e71c476157fc025d3ccd4bbe08e83ef9", True),
+    "PHP": ("0x0396000dc82bfaee746a9ac6dc69dad3223ca9c6", True),
+    "SGD": ("0x81575495532fb311efc5c993b612564274f0949b", True),
+    "TRY": ("0x29413773e7cd4dfd6ad89a50887877b88a6c592c", True),
+    "ZAR": ("0x2ecc8a8b370fc6a217166b2782a35339bebee98b", True),
+}
 
 MODES = frozenset({"fast", "best"})
 
