@@ -18,7 +18,20 @@ from usdctofiat.calldata import (
     normalize_payee,
     parse_usdc_amount,
 )
-from usdctofiat.constants import ERC8021_MARKER, ESCROW_V2, INTENT_GUARDIAN, RATE_MANAGER_V1, USDC, ZERO_ADDRESS
+from usdctofiat.constants import (
+    CHAINLINK_ORACLE_ADAPTER,
+    CHAINLINK_ORACLE_FEEDS,
+    DEFAULT_ORACLE_MAX_STALENESS,
+    ERC8021_MARKER,
+    ESCROW_V2,
+    FAST_SPREAD_BPS,
+    INTENT_GUARDIAN,
+    MIN_CONVERSION_RATE,
+    PRECISE_UNIT,
+    RATE_MANAGER_V1,
+    USDC,
+    ZERO_ADDRESS,
+)
 from usdctofiat.errors import ValidationError
 
 
@@ -29,6 +42,26 @@ def _decode_create_deposit(data: str):
     raw = decode_hex(data)
     payload = raw[4 : raw.rfind(ERC8021_MARKER)]
     return decode([CREATE_DEPOSIT_TUPLE], payload)[0]
+
+
+def _currency_row(data: str):
+    """The single (code, minConversionRate, oracleRateConfig) row of the deposit."""
+    return _decode_create_deposit(data)[5][0][0]
+
+
+def _decode_adapter_config(adapter_config: bytes) -> tuple[str, bool]:
+    feed, invert = decode(["address", "bool"], adapter_config)
+    return feed.lower(), invert
+
+
+def _deposit_for(currency: str, **kwargs) -> str:
+    return encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency=currency,
+        **kwargs,
+    )
 
 
 def test_parse_usdc_human_and_units():
@@ -104,6 +137,52 @@ def test_create_deposit_encodes_explicit_intent_guardian():
     )
     assert _decode_create_deposit(zeroed)[7].lower() == ZERO_ADDRESS.lower()
     assert _decode_create_deposit(custom)[7].lower() == other.lower()
+
+
+def test_create_deposit_attaches_the_chainlink_feed_for_every_currency():
+    """Non-USD deposits were encoded with no oracle at a fixed 1.0 fiat per USDC. (#11)"""
+    for currency in ("EUR", "GBP", "MXN", "AUD", "ZAR"):
+        feed, invert = CHAINLINK_ORACLE_FEEDS[currency]
+        _, _, oracle = _currency_row(_deposit_for(currency))
+        adapter, adapter_config, spread_bps, max_staleness = oracle
+        assert adapter.lower() == CHAINLINK_ORACLE_ADAPTER.lower()
+        assert _decode_adapter_config(adapter_config) == (feed.lower(), invert)
+        assert invert is True
+        assert spread_bps == FAST_SPREAD_BPS
+        assert max_staleness == DEFAULT_ORACLE_MAX_STALENESS
+
+
+def test_create_deposit_keeps_the_usd_passthrough_oracle():
+    """USD prices off the zero-address passthrough, not a feed."""
+    _, _, oracle = _currency_row(_deposit_for("USD"))
+    adapter, adapter_config, _, _ = oracle
+    assert adapter.lower() == CHAINLINK_ORACLE_ADAPTER.lower()
+    assert _decode_adapter_config(adapter_config) == (ZERO_ADDRESS.lower(), False)
+
+
+def test_create_deposit_floors_the_rate_at_one_wei():
+    """The oracle sets the price. A 1e18 floor priced every currency at 1:1. (#11)"""
+    for currency in ("USD", "EUR", "MXN"):
+        _, min_conversion_rate, _ = _currency_row(_deposit_for(currency))
+        assert min_conversion_rate == MIN_CONVERSION_RATE == 1
+        assert min_conversion_rate != PRECISE_UNIT
+
+
+def test_create_deposit_rejects_a_currency_with_no_feed():
+    """keccak(code) is a valid onchain currency, so an unpriceable code must not encode."""
+    for currency in ("JPY", "INR", "NOK", "NOPE"):
+        try:
+            _deposit_for(currency)
+            raise AssertionError(f"expected {currency} to be rejected")
+        except ValidationError as exc:
+            assert exc.field == "currency"
+
+
+def test_create_deposit_honours_an_explicit_feed_override():
+    other = "0x2222222222222222222222222222222222222222"
+    data = _deposit_for("EUR", oracle_feed=other, oracle_invert=False)
+    _, _, oracle = _currency_row(data)
+    assert _decode_adapter_config(oracle[1]) == (other.lower(), False)
 
 
 def test_withdraw_and_set_rate_manager_selectors():

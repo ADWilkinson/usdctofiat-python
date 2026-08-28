@@ -17,14 +17,15 @@ from .constants import (
     BEST_MANAGER_FEE_BPS,
     CHAIN_ID,
     CHAINLINK_ORACLE_ADAPTER,
+    CHAINLINK_ORACLE_FEEDS,
     CURRENCY_HASHES,
     DEFAULT_ORACLE_MAX_STALENESS,
     ESCROW_V2,
     FAST_SPREAD_BPS,
     INTENT_GUARDIAN,
+    MIN_CONVERSION_RATE,
     MIN_USDC_UNITS,
     PAYMENT_METHOD_HASHES,
-    PRECISE_UNIT,
     RATE_MANAGER_V1,
     USDC,
     USDC_UNITS,
@@ -86,6 +87,18 @@ def currency_hash(code: str) -> str:
     if key in CURRENCY_HASHES:
         return CURRENCY_HASHES[key]
     return "0x" + keccak(text=key).hex()
+
+
+def oracle_feed_for(currency: str) -> tuple[str, bool]:
+    """Chainlink (feed, invert) for a currency. Raises when the protocol has no feed."""
+    key = currency.strip().upper()
+    if key not in CHAINLINK_ORACLE_FEEDS:
+        raise ValidationError(
+            f"unsupported currency {currency!r}: no Chainlink feed on Base, so the deposit "
+            f"rate cannot be priced. Supported: {sorted(CHAINLINK_ORACLE_FEEDS)}",
+            field="currency",
+        )
+    return CHAINLINK_ORACLE_FEEDS[key]
 
 
 def payment_method_hash(platform: str) -> str:
@@ -154,7 +167,8 @@ def encode_create_deposit(
     intent_guardian: str = INTENT_GUARDIAN,
     retain_on_empty: bool = True,
     oracle_adapter: str | None = None,
-    oracle_feed: str = ZERO_ADDRESS,
+    oracle_feed: str | None = None,
+    oracle_invert: bool | None = None,
 ) -> str:
     """EscrowV2.createDeposit at the oracle floor. Fast: 0 bps, no Delegate vault."""
     if not payee_details_hash or payee_details_hash == ZERO_ADDRESS:
@@ -167,22 +181,28 @@ def encode_create_deposit(
     if lo <= 0 or lo > hi:
         raise ValidationError("invalid intent range", field="intent_amount_range")
 
+    # Every currency is priced by its Chainlink feed, not by a fixed rate. USD is
+    # the zero-address passthrough (constant 1.0); the rest invert a USD-quoted
+    # feed to fiat per USDC. A currency with no feed raises rather than encoding a
+    # silent 1:1 rate.
+    feed, invert = oracle_feed_for(currency)
+    if oracle_feed is not None:
+        feed = oracle_feed
+    if oracle_invert is not None:
+        invert = oracle_invert
+    if feed == ZERO_ADDRESS:
+        invert = False  # the passthrough is constant 1.0; there is nothing to invert
     adapter = oracle_adapter or CHAINLINK_ORACLE_ADAPTER
-    # USD uses the documented zero-address passthrough (constant 1.0).
-    # Other currencies still attach the adapter with the same passthrough in v1
-    # only when currency is USD; otherwise oracle is disabled (adapter=0).
-    use_oracle = currency.strip().upper() == "USD" or oracle_feed != ZERO_ADDRESS
-    if use_oracle:
-        oracle = (
-            checksum(adapter),
-            encode_oracle_adapter_config(oracle_feed, False),
-            FAST_SPREAD_BPS,
-            DEFAULT_ORACLE_MAX_STALENESS,
-        )
-    else:
-        oracle = (checksum(ZERO_ADDRESS), b"", 0, 0)
+    oracle = (
+        checksum(adapter),
+        encode_oracle_adapter_config(feed, invert),
+        FAST_SPREAD_BPS,
+        DEFAULT_ORACLE_MAX_STALENESS,
+    )
 
-    currency_row = (code, PRECISE_UNIT, oracle)
+    # The oracle sets the rate, so the floor is one wei. A 1e18 floor would price
+    # every deposit at 1.0 fiat per USDC regardless of the feed.
+    currency_row = (code, MIN_CONVERSION_RATE, oracle)
     payment_data = (checksum(gating_service), payee, verification_data)
     params = (
         checksum(USDC),

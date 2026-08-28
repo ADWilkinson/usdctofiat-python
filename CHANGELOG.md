@@ -2,6 +2,14 @@
 
 ## 0.1.1 — unreleased
 
+- `encode_create_deposit` attaches the Chainlink oracle for every currency and
+  floors `minConversionRate` at 1 wei, so the feed sets the price. It previously
+  attached an oracle only for USD and encoded `minConversionRate = 1e18`, which
+  priced every other currency at a fixed 1.0 fiat per USDC: `currency="MXN"` sold
+  1 USDC for 1 MXN, and EUR/GBP deposits sat above market and never filled. A
+  currency with no Base feed now raises `ValidationError` instead of encoding
+  1:1. The encoded currency row is byte-identical to `@usdctofiat/offramp` 8.0.2.
+  (#11)
 - `encode_create_deposit` defaults `intent_guardian` to the protocol guardian
   instead of `address(0)`. Deposits created by `0.1.0` encoded
   `intentGuardian = 0x0000000000000000000000000000000000000000`; this restores
