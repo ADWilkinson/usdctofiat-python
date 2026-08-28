@@ -2,6 +2,12 @@
 
 ## 0.1.1 — unreleased
 
+- `deposits()` and `watch()` now query the live Hasura indexer schema (`Deposit`)
+  with its comparison-expression filters, including case-insensitive Ethereum
+  address matching. The previous lowercase `deposits` / `deposit` root fields do
+  not exist, so both methods failed for every caller. The single-deposit read
+  filters by the onchain deposit id and EscrowV2 address instead of treating that
+  id as the indexer's internal primary key. (#13)
 - `encode_create_deposit` attaches the Chainlink oracle for every currency and
   floors `minConversionRate` at 1 wei, so the feed sets the price. It previously
   attached an oracle only for USD and encoded `minConversionRate = 1e18`, which
