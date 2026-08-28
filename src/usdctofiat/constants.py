@@ -17,6 +17,10 @@ CHAINLINK_ORACLE_ADAPTER_V2 = "0x53881a928abD61C095e5f30b63bc554872C3b2f1"
 # @zkp2p/sdk@0.12.0 — adapter used for current V2.2 oracle floors
 CHAINLINK_ORACLE_ADAPTER = "0xfc81d1b5841e697973af3072fc8e03af76cb39ef"
 INTENT_GUARDIAN = "0x83671606454fA72ba1e2831E18C5090D25629414"
+# @zkp2p/sdk@0.12.1 getGatingServiceAddress(8453, "production"). EscrowV2 only
+# checks a gating signature when the deposit stores a non-zero address, so a
+# deposit encoded with address(0) accepts intents the quote service never saw.
+GATING_SERVICE = "0x396D31055Db28C0C6f36e8b36f18FE7227248a97"
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 CURATOR_URL = "https://api.zkp2p.xyz"
