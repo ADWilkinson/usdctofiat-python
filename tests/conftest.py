@@ -19,36 +19,17 @@ def makers_fixture() -> dict:
 
 
 @pytest.fixture
-def mocked_http(makers_fixture):
+def indexer_fixture() -> dict:
+    return json.loads((FIXTURES / "indexer_deposit.json").read_text())
+
+
+@pytest.fixture
+def mocked_http(makers_fixture, indexer_fixture):
     with respx.mock(assert_all_called=False) as router:
         router.post(f"{CURATOR_URL}{MAKERS_CREATE_PATH}").mock(
             return_value=httpx.Response(200, json=makers_fixture["response"])
         )
         router.post(INDEXER_URL).mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "data": {
-                        "deposits": [
-                            {
-                                "id": "42",
-                                "depositor": "0x1111111111111111111111111111111111111111",
-                                "remainingDeposits": "100000000",
-                                "outstandingIntentAmount": "0",
-                                "status": "ACTIVE",
-                                "acceptingIntents": True,
-                            }
-                        ],
-                        "deposit": {
-                            "id": "42",
-                            "depositor": "0x1111111111111111111111111111111111111111",
-                            "remainingDeposits": "100000000",
-                            "outstandingIntentAmount": "0",
-                            "status": "ACTIVE",
-                            "acceptingIntents": True,
-                        },
-                    }
-                },
-            )
+            return_value=httpx.Response(200, json=indexer_fixture["response"])
         )
         yield router
