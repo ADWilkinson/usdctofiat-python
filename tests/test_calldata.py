@@ -2,7 +2,7 @@
 from eth_abi import decode
 from eth_utils import decode_hex
 
-from usdctofiat.attribution import parse_erc8021
+from usdctofiat.attribution import erc8021_suffix, lock_attribution, parse_erc8021
 from usdctofiat.calldata import (
     APPROVE_SELECTOR,
     CREATE_DEPOSIT_SELECTOR,
@@ -25,6 +25,7 @@ from usdctofiat.constants import (
     ERC8021_MARKER,
     ESCROW_V2,
     FAST_SPREAD_BPS,
+    GATING_SERVICE,
     INTENT_GUARDIAN,
     MIN_CONVERSION_RATE,
     PRECISE_UNIT,
@@ -139,6 +140,58 @@ def test_create_deposit_encodes_explicit_intent_guardian():
     assert _decode_create_deposit(custom)[7].lower() == other.lower()
 
 
+def test_create_deposit_defaults_to_the_protocol_gating_service():
+    """0.1.0 encoded intentGatingService = 0x0, which skips the gating check. (#16)"""
+    data = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+    )
+    gating_service = _decode_create_deposit(data)[4][0][0]
+    assert gating_service.lower() == GATING_SERVICE.lower()
+    assert gating_service.lower() != ZERO_ADDRESS.lower()
+
+
+def test_create_deposit_encodes_explicit_gating_service():
+    other = "0x2222222222222222222222222222222222222222"
+    zeroed = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+        gating_service=ZERO_ADDRESS,
+    )
+    custom = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+        gating_service=other,
+    )
+    assert _decode_create_deposit(zeroed)[4][0][0].lower() == ZERO_ADDRESS.lower()
+    assert _decode_create_deposit(custom)[4][0][0].lower() == other.lower()
+
+
+def test_create_deposit_closes_a_drained_deposit_by_default():
+    """retainOnEmpty = True left every cashout as a zombie ACTIVE deposit. (#16)"""
+    data = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+    )
+    assert _decode_create_deposit(data)[8] is False
+    retained = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+        retain_on_empty=True,
+    )
+    assert _decode_create_deposit(retained)[8] is True
+
+
 def test_create_deposit_attaches_the_chainlink_feed_for_every_currency():
     """Non-USD deposits were encoded with no oracle at a fixed 1.0 fiat per USDC. (#11)"""
     for currency in ("EUR", "GBP", "MXN", "AUD", "ZAR"):
@@ -237,3 +290,62 @@ def test_extract_tx_hash_reads_web3_receipt_keys():
     assert extract_tx_hash(expected) == expected
     assert extract_tx_hash({"status": 1}) == ""
     assert extract_tx_hash(None) == ""
+
+
+# `createDeposit` calldata for the case below, encoded by viem against the EscrowV2
+# ABI from `@zkp2p/sdk` 0.12.1 `getContracts(8453, "production")`, with
+# `getGatingServiceAddress` and `getSpreadOracleConfig` supplying the gating service
+# and the EUR oracle. This is the reference `@usdctofiat/offramp` 8.0.2 builds, minus
+# its attribution suffix. Regenerate it from the TS SDK, never from this client.
+REFERENCE_CREATE_DEPOSIT = (
+    "ab3532c800000000000000000000000000000000000000000000000000000000"
+    "00000020000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54"
+    "bda0291300000000000000000000000000000000000000000000000000000000"
+    "05f5e10000000000000000000000000000000000000000000000000000000000"
+    "000f424000000000000000000000000000000000000000000000000000000000"
+    "05f5e10000000000000000000000000000000000000000000000000000000000"
+    "0000014000000000000000000000000000000000000000000000000000000000"
+    "0000018000000000000000000000000000000000000000000000000000000000"
+    "0000024000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000083671606454fa72ba1e2831e18c5090d"
+    "2562941400000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "00000001617f88ab82b5c1b014c539f7e75121427f0bb50a4c58b187a238531e"
+    "7d58605d00000000000000000000000000000000000000000000000000000000"
+    "0000000100000000000000000000000000000000000000000000000000000000"
+    "00000020000000000000000000000000396d31055db28c0c6f36e8b36f18fe72"
+    "27248a9711111111111111111111111111111111111111111111111111111111"
+    "1111111100000000000000000000000000000000000000000000000000000000"
+    "0000006000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "0000000100000000000000000000000000000000000000000000000000000000"
+    "0000002000000000000000000000000000000000000000000000000000000000"
+    "0000000100000000000000000000000000000000000000000000000000000000"
+    "00000020fff16d60be267153303bbfa66e593fb8d06e24ea5ef24b6acca5224c"
+    "2ca6b90700000000000000000000000000000000000000000000000000000000"
+    "0000000100000000000000000000000000000000000000000000000000000000"
+    "00000060000000000000000000000000fc81d1b5841e697973af3072fc8e03af"
+    "76cb39ef00000000000000000000000000000000000000000000000000000000"
+    "0000008000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "0001518000000000000000000000000000000000000000000000000000000000"
+    "00000040000000000000000000000000c91d87e81fab8f93699ecf7ee9b44d11"
+    "e1d53f0f00000000000000000000000000000000000000000000000000000000"
+    "00000001"
+)
+
+
+def test_create_deposit_is_byte_identical_to_the_reference_sdk():
+    """Parity guard. #16 was two words: intentGatingService and retainOnEmpty."""
+    data = encode_create_deposit(
+        amount_units=100_000_000,
+        payee_details_hash=PAYEE,
+        platform="revolut",
+        currency="EUR",
+        intent_min=1_000_000,
+        intent_max=100_000_000,
+    )
+    raw = decode_hex(data)
+    suffix = erc8021_suffix(lock_attribution())
+    assert raw.endswith(suffix)
+    assert raw[: -len(suffix)].hex() == REFERENCE_CREATE_DEPOSIT

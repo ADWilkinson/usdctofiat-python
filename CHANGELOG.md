@@ -2,6 +2,15 @@
 
 ## 0.1.1 — unreleased
 
+- `encode_create_deposit` defaults `gating_service` to the protocol gating
+  service `0x396D31055Db28C0C6f36e8b36f18FE7227248a97` and `retain_on_empty` to
+  `False`. `0.1.0` encoded `intentGatingService = 0x0`, which turns off the
+  EscrowV2 gating check so a deposit accepts intents the quote service never
+  saw, and `retainOnEmpty = true`, which left every drained deposit permanently
+  ACTIVE and still accepting intents. These were the last two words where the
+  encoded `createDeposit` struct differed from `@usdctofiat/offramp` 8.0.2; the
+  calldata is now byte-identical to it, pinned by a test. Both stay overridable.
+  (#16)
 - `deposits()` and `watch()` now query the live Hasura indexer schema (`Deposit`)
   with its comparison-expression filters, including case-insensitive Ethereum
   address matching. The previous lowercase `deposits` / `deposit` root fields do

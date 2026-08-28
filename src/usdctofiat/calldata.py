@@ -22,6 +22,7 @@ from .constants import (
     DEFAULT_ORACLE_MAX_STALENESS,
     ESCROW_V2,
     FAST_SPREAD_BPS,
+    GATING_SERVICE,
     INTENT_GUARDIAN,
     MIN_CONVERSION_RATE,
     MIN_USDC_UNITS,
@@ -161,11 +162,11 @@ def encode_create_deposit(
     attribution: Attribution | None = None,
     intent_min: int | None = None,
     intent_max: int | None = None,
-    gating_service: str = ZERO_ADDRESS,
+    gating_service: str = GATING_SERVICE,
     verification_data: bytes = b"",
     delegate: str = ZERO_ADDRESS,
     intent_guardian: str = INTENT_GUARDIAN,
-    retain_on_empty: bool = True,
+    retain_on_empty: bool = False,
     oracle_adapter: str | None = None,
     oracle_feed: str | None = None,
     oracle_invert: bool | None = None,
@@ -204,6 +205,8 @@ def encode_create_deposit(
     # every deposit at 1.0 fiat per USDC regardless of the feed.
     currency_row = (code, MIN_CONVERSION_RATE, oracle)
     payment_data = (checksum(gating_service), payee, verification_data)
+    # retain_on_empty is False so a drained deposit closes. Retaining it leaves the
+    # deposit active and accepting intents with nothing left to release.
     params = (
         checksum(USDC),
         amount_units,
