@@ -1,11 +1,15 @@
-
 {
   "request": {
     "processorName": "revolut",
-    "payeeData": {"offchainId": "alice"},
-    "chainId": 8453
+    "offchainId": "alice"
   },
   "response": {
-    "payeeDetailsHash": "0x1111111111111111111111111111111111111111111111111111111111111111"
+    "success": true,
+    "message": "Maker created",
+    "responseObject": {
+      "hashedOnchainId": "0x1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "statusCode": 200,
+    "errorCode": null
   }
 }

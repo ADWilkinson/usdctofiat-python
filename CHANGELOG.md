@@ -2,6 +2,18 @@
 
 ## 0.1.1 — unreleased
 
+- `create_payee_hash()` posts `offchainId` as a top-level field and reads the
+  digest out of the curator's `responseObject`. `0.1.0` nested the identifier
+  under `payeeData` and added a `chainId`, which the curator rejects as
+  `invalid_maker_data` exactly as if no payee had been sent, so every
+  `prepare()` / `cashout()` that did not already carry a `payee_details_hash`
+  raised `CuratorError`. The response envelope
+  (`{success, message, responseObject, statusCode, errorCode}`) was also never
+  read past its top level, so a successful answer would have been dropped too. A
+  2xx carrying `success: false` is now an error, a digest that is not a 32-byte
+  hex hash is refused rather than encoded into calldata, and the request body and
+  live envelope are pinned by tests. Matches `postMakerCreate` in
+  `@usdctofiat/offramp` 9.0.0. (#20)
 - `estimate()` prices off the currency's Chainlink feed instead of returning a
   fixed `rate = "1"`. Every non-USD estimate was wrong by the whole FX rate:
   `estimate(amount="100", currency="TRY")` reported 100 TRY where the feed pays
