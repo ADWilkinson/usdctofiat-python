@@ -72,7 +72,7 @@ class Oracle:
         try:
             values = decode(LATEST_ROUND_DATA_OUTPUTS, raw)
         except Exception as exc:  # noqa: BLE001 - any decode failure is the same signal
-            raise OracleError(f"{currency} feed returned an undecodable round", details=raw.hex()) from exc
+            raise OracleError(f"{currency} feed returned an undecodable round", details=raw.hex()[:300]) from exc
         answer = int(values[1])
         updated_at = int(values[3])
         return answer, updated_at if updated_at > 0 else None
@@ -99,6 +99,8 @@ class Oracle:
             payload = resp.json()
         except ValueError as exc:
             raise OracleError("oracle rpc returned non-JSON") from exc
+        if not isinstance(payload, dict):
+            raise OracleError("oracle rpc returned an unexpected payload", details=str(payload)[:300])
         if payload.get("error"):
             raise OracleError("oracle rpc error", details=payload["error"])
         result = payload.get("result")

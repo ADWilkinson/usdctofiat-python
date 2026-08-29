@@ -110,6 +110,14 @@ def test_oracle_failure_raises_rather_than_falling_back_to_one():
             create_offramp().estimate(mode="fast", amount="100", currency="EUR")
 
 
+def test_a_malformed_rpc_payload_is_not_priced():
+    for body in ({"jsonrpc": "2.0", "id": 1, "result": "0x"}, [{"result": "0x00"}]):
+        with respx.mock(assert_all_called=False) as router:
+            router.post(BASE_RPC_URL).mock(return_value=httpx.Response(200, json=body))
+            with pytest.raises(OracleError):
+                Oracle().rate("EUR")
+
+
 def test_a_non_positive_answer_is_not_priced(round_data):
     with respx.mock(assert_all_called=False) as router:
         rpc_route(router, round_data, 0)
