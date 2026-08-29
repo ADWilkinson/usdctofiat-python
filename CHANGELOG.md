@@ -2,6 +2,16 @@
 
 ## 0.1.1 — unreleased
 
+- `estimate()` prices off the currency's Chainlink feed instead of returning a
+  fixed `rate = "1"`. Every non-USD estimate was wrong by the whole FX rate:
+  `estimate(amount="100", currency="TRY")` reported 100 TRY where the feed pays
+  about 4,824, and EUR was quoted roughly 16% high. The rate is now read with
+  `latestRoundData()` over Base JSON-RPC and inverted to fiat per USDC, matching
+  `readEstimate` in `@zkp2p/cash`. `Estimate` gains `as_of`, `oracle_updated_at`
+  and `stale`; a currency with no feed raises `ValidationError` as `prepare()`
+  already did, and an unreachable RPC raises `OracleError` rather than falling
+  back to 1:1. The endpoint defaults to `https://mainnet.base.org` and is
+  overridable with `rpc_url` or an injected `Oracle`. (#18)
 - `encode_create_deposit` defaults `gating_service` to the protocol gating
   service `0x396D31055Db28C0C6f36e8b36f18FE7227248a97` and `retain_on_empty` to
   `False`. `0.1.0` encoded `intentGatingService = 0x0`, which turns off the

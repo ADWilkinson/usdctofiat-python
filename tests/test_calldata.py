@@ -195,12 +195,13 @@ def test_create_deposit_closes_a_drained_deposit_by_default():
 def test_create_deposit_attaches_the_chainlink_feed_for_every_currency():
     """Non-USD deposits were encoded with no oracle at a fixed 1.0 fiat per USDC. (#11)"""
     for currency in ("EUR", "GBP", "MXN", "AUD", "ZAR"):
-        feed, invert = CHAINLINK_ORACLE_FEEDS[currency]
+        feed, invert, decimals = CHAINLINK_ORACLE_FEEDS[currency]
         _, _, oracle = _currency_row(_deposit_for(currency))
         adapter, adapter_config, spread_bps, max_staleness = oracle
         assert adapter.lower() == CHAINLINK_ORACLE_ADAPTER.lower()
         assert _decode_adapter_config(adapter_config) == (feed.lower(), invert)
         assert invert is True
+        assert decimals == 8
         assert spread_bps == FAST_SPREAD_BPS
         assert max_staleness == DEFAULT_ORACLE_MAX_STALENESS
 

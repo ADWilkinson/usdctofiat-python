@@ -54,3 +54,8 @@ class CuratorError(UsdctoFiatError):
 class IndexerError(UsdctoFiatError):
     def __init__(self, message: str, details: object | None = None):
         super().__init__(message, code="INDEXER", details=details)
+
+
+class OracleError(UsdctoFiatError):
+    def __init__(self, message: str, details: object | None = None):
+        super().__init__(message, code="ORACLE", details=details)
