@@ -99,7 +99,8 @@ def oracle_feed_for(currency: str) -> tuple[str, bool]:
             f"rate cannot be priced. Supported: {sorted(CHAINLINK_ORACLE_FEEDS)}",
             field="currency",
         )
-    return CHAINLINK_ORACLE_FEEDS[key]
+    feed, invert, _decimals = CHAINLINK_ORACLE_FEEDS[key]
+    return feed, invert
 
 
 def payment_method_hash(platform: str) -> str:

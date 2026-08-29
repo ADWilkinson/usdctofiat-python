@@ -25,12 +25,14 @@ from .constants import (
 from .errors import (
     CuratorError,
     ModeRequired,
+    OracleError,
     PayeeVerificationRequired,
     SignerRequired,
     UsdctoFiatError,
     ValidationError,
 )
 from .offramp import Offramp, cashout, create_offramp
+from .oracle import Oracle, OracleRate
 from .types import CashoutResult, DelegateHook, Estimate, PreparedCashout, UnsignedTx
 
 __all__ = [
@@ -46,6 +48,9 @@ __all__ = [
     "FAST_SPREAD_BPS",
     "ModeRequired",
     "Offramp",
+    "Oracle",
+    "OracleError",
+    "OracleRate",
     "PEER_REF",
     "PRODUCT",
     "PayeeVerificationRequired",

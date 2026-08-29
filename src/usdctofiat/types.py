@@ -105,9 +105,16 @@ class Estimate:
     amount_units: int
     currency: str
     rate: str
+    """Target-currency units per 1 USDC, read from the currency's Chainlink feed."""
     receive_amount: str
     spread_bps: int
     manager_fee_bps: int
+    as_of: int = 0
+    """Unix seconds when the oracle was read."""
+    oracle_updated_at: int | None = None
+    """Unix seconds the feed last updated. None for the USD passthrough."""
+    stale: bool = False
+    """The feed reading is older than a day. Treat the rate with caution."""
     kind: str = "oracle-estimate"
     note: str = "Approximate. The binding rate resolves at fill. Not a locked quote."
 
@@ -120,6 +127,9 @@ class Estimate:
             "receive_amount": self.receive_amount,
             "spread_bps": self.spread_bps,
             "manager_fee_bps": self.manager_fee_bps,
+            "as_of": self.as_of,
+            "oracle_updated_at": self.oracle_updated_at,
+            "stale": self.stale,
             "kind": self.kind,
             "note": self.note,
         }

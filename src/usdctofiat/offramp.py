@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal, localcontext
 from typing import Any, Iterator
 
 from .attribution import lock_attribution
@@ -19,6 +20,7 @@ from .calldata import (
     withdraw_tx,
 )
 from .constants import (
+    BASE_RPC_URL,
     BEST_MANAGER_FEE_BPS,
     CURATOR_URL,
     FAST_SPREAD_BPS,
@@ -29,6 +31,7 @@ from .constants import (
 from .curator import Curator
 from .errors import ModeRequired, SignerRequired, ValidationError
 from .indexer import Indexer
+from .oracle import Oracle
 from .types import CashoutResult, Estimate, PreparedCashout, Signer, UnsignedTx
 
 
@@ -40,8 +43,10 @@ class Offramp:
         *,
         curator_url: str = CURATOR_URL,
         indexer_url: str = INDEXER_URL,
+        rpc_url: str = BASE_RPC_URL,
         curator: Curator | None = None,
         indexer: Indexer | None = None,
+        oracle: Oracle | None = None,
         referrer: str | None = None,
         referrers: list[str] | None = None,
         extra_referrers: list[str] | None = None,
@@ -63,6 +68,7 @@ class Offramp:
         )
         self.curator = curator or Curator(curator_url)
         self.indexer = indexer or Indexer(indexer_url)
+        self.oracle = oracle or Oracle(rpc_url)
 
     def prepare(
         self,
@@ -150,19 +156,27 @@ class Offramp:
         )
 
     def estimate(self, *, mode: str | None = None, amount: object, currency: str, **_: object) -> Estimate:
+        """Price the cash-out off the currency's Chainlink feed. Not a locked quote.
+
+        The rate is read live: a fixed 1:1 would misquote every non-USD currency
+        by the whole FX rate. USD is the zero-address passthrough and needs no read.
+        """
         resolved = _require_mode(mode)
         units = parse_usdc_amount(amount)
-        human = Decimal_human(units)
+        quote = self.oracle.rate(currency)
         fee = BEST_MANAGER_FEE_BPS if resolved == "best" else 0
         # Fast: 0 bps seller spread. Best: 10 bps taken from released USDC, not seller fiat.
         return Estimate(
             mode=resolved,  # type: ignore[arg-type]
             amount_units=units,
-            currency=currency.strip().upper(),
-            rate="1",
-            receive_amount=human,
+            currency=quote.currency,
+            rate=_decimal_str(quote.rate),
+            receive_amount=_decimal_str(Decimal(units) / USDC_UNITS * quote.rate),
             spread_bps=FAST_SPREAD_BPS,
             manager_fee_bps=fee,
+            as_of=quote.as_of,
+            oracle_updated_at=quote.updated_at,
+            stale=quote.stale,
         )
 
     def deposits(self, owner: str) -> list[dict[str, Any]]:
@@ -202,7 +216,7 @@ def cashout(
 ) -> CashoutResult:
     client_kwargs = {
         key: kwargs.pop(key)
-        for key in ("curator_url", "indexer_url", "curator", "indexer", "referrer", "referrers", "extra_referrers", "referral_code")
+        for key in ("curator_url", "indexer_url", "rpc_url", "curator", "indexer", "oracle", "referrer", "referrers", "extra_referrers", "referral_code")
         if key in kwargs
     }
     return create_offramp(**client_kwargs).cashout(
@@ -225,9 +239,13 @@ def _require_mode(mode: str | None) -> str:
     return key
 
 
-def Decimal_human(units: int) -> str:
-    whole = units // USDC_UNITS
-    frac = units % USDC_UNITS
-    if frac == 0:
-        return str(whole)
-    return f"{whole}.{frac:06d}".rstrip("0")
+ESTIMATE_PRECISION = Decimal("0.000001")
+
+
+def _decimal_str(value: Decimal) -> str:
+    """Six decimal places, trailing zeros dropped. Feed rates do not terminate."""
+    with localcontext() as ctx:
+        # An int amount is unbounded, so give the quantize room rather than raising.
+        ctx.prec = 64
+        text = format(value.quantize(ESTIMATE_PRECISION), "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text

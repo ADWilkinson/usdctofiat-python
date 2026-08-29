@@ -63,7 +63,8 @@ for tx, step in zip(prepared.txs, prepared.steps):
 
 - Fast prepare-path: public curator `POST /v2/makers/create` (no API key), then unsigned USDC `approve` + EscrowV2 `createDeposit` at the oracle floor (0 bps, no Delegate vault), with ERC-8021 on every tx.
 - Best is the same deposit plus a Delegate `setRateManager` hook so the API exists. The hook is encoded after a `deposit_id` is known. No Relay. No attestation mint.
-- `estimate`, `watch`, `withdraw` / `close`, and `deposits` talk to the public indexer.
+- `estimate` reads the currency's Chainlink feed on Base and prices the cash-out
+  off it. `watch`, `withdraw` / `close`, and `deposits` talk to the public indexer.
 
 There is no `POST /cashout`. Deposit creation is onchain.
 
@@ -77,6 +78,22 @@ only currencies with a feed are accepted:
 Anything else raises `ValidationError`. A code with no feed could otherwise be
 encoded onchain at a fixed 1:1 rate.
 
+## Estimate
+
+`estimate()` reads that same feed live and returns fiat per USDC, so it is a
+network call. USD is the zero-address passthrough and reads nothing.
+
+```python
+offramp = create_offramp()  # rpc_url= to use your own Base endpoint
+quote = offramp.estimate(mode="fast", amount="100", currency="EUR")
+print(quote.rate, quote.receive_amount, quote.stale)
+```
+
+`rate` is target-currency units per 1 USDC at `as_of`; `receive_amount` is
+`amount x rate`. `stale` is set when the feed last updated over a day ago. It is
+an estimate, not a locked quote: the binding rate resolves when a buyer fills. An
+unreachable RPC raises `OracleError` rather than falling back to a 1:1 rate.
+
 ## Base mainnet
 
 | | |
@@ -86,6 +103,7 @@ encoded onchain at a fixed 1:1 rate.
 | EscrowV2 | `0x777777779d229cdF3110e9de47943791c26300Ef` |
 
 HTTP: `https://api.zkp2p.xyz` and `https://indexer.zkp2p.xyz/v1/graphql`.
+JSON-RPC: `https://mainnet.base.org`, overridable with `rpc_url`.
 
 ## Agno toolkit draft
 
