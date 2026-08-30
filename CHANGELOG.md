@@ -2,6 +2,18 @@
 
 ## 0.1.1 — unreleased
 
+- `deposits()` filters on the EscrowV2 address and returns the onchain
+  `depositId`. The indexer serves every Base escrow it has tracked, so filtering
+  on `depositor` + `chainId` alone returned deposits this client cannot drive:
+  live, one depositor came back with 35 rows across three escrows, only 9 of them
+  EscrowV2, and the rows carried no `escrowAddress` to tell them apart. The
+  selection also had no id that the other methods accept — `id` is the indexer's
+  composite `<escrow>_<depositId>` key, which `watch()` binds to
+  `$depositId: numeric!` for an empty result and `withdraw()` / `close()` feeds to
+  `int()` for a `ValueError` — so listing an owner's deposits and then watching or
+  closing one could not work. Rows now carry `depositId` and `escrowAddress`, and
+  the fixture matches a live row. Mirrors the reference SDK, which likewise
+  filters owner deposits to the escrows it drives. (#22)
 - `create_payee_hash()` posts `offchainId` as a top-level field and reads the
   digest out of the curator's `responseObject`. `0.1.0` nested the identifier
   under `payeeData` and added a `chainId`, which the curator rejects as

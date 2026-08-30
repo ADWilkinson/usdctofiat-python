@@ -11,16 +11,19 @@ from .constants import CHAIN_ID, ESCROW_V2, INDEXER_URL
 from .errors import IndexerError
 
 DEPOSITS_QUERY = """
-query OwnerDeposits($depositor: String!, $chainId: Int!) {
+query OwnerDeposits($depositor: String!, $escrowAddress: String!, $chainId: Int!) {
   Deposit(
     where: {
       depositor: { _ilike: $depositor }
+      escrowAddress: { _eq: $escrowAddress }
       chainId: { _eq: $chainId }
     }
     limit: 50
     order_by: { timestamp: desc }
   ) {
     id
+    depositId
+    escrowAddress
     depositor
     remainingDeposits
     outstandingIntentAmount
@@ -41,6 +44,8 @@ query Deposit($depositId: numeric!, $escrowAddress: String!, $chainId: Int!) {
     limit: 1
   ) {
     id
+    depositId
+    escrowAddress
     depositor
     remainingDeposits
     outstandingIntentAmount
@@ -58,9 +63,20 @@ class Indexer:
         self._client = client
 
     def deposits(self, owner: str) -> list[dict[str, Any]]:
+        """An owner's EscrowV2 deposits, newest first.
+
+        Scoped to EscrowV2 because the indexer serves every Base escrow it has
+        ever tracked and withdraw() only ever targets this one. Rows carry the
+        onchain depositId that watch() and withdraw() take; `id` is the
+        indexer's own "<escrow>_<depositId>" key and neither method accepts it.
+        """
         data = self._graphql(
             DEPOSITS_QUERY,
-            {"depositor": owner.strip(), "chainId": CHAIN_ID},
+            {
+                "depositor": owner.strip(),
+                "escrowAddress": ESCROW_V2.lower(),
+                "chainId": CHAIN_ID,
+            },
         )
         rows = data.get("Deposit")
         if not isinstance(rows, list):
