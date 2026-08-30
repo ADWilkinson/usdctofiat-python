@@ -39,7 +39,12 @@ def test_watch_withdraw_deposits(mocked_http):
     assert "deposits(" not in list_request["query"]
     assert "depositor: { _ilike: $depositor }" in list_request["query"]
     assert "chainId: { _eq: $chainId }" in list_request["query"]
-    assert list_request["variables"] == {"depositor": owner.strip(), "chainId": CHAIN_ID}
+    assert "escrowAddress: { _eq: $escrowAddress }" in list_request["query"]
+    assert list_request["variables"] == {
+        "depositor": owner.strip(),
+        "escrowAddress": ESCROW_V2.lower(),
+        "chainId": CHAIN_ID,
+    }
 
     watch_request = json.loads(indexer_calls[1].request.content)
     assert "$depositId: numeric!" in watch_request["query"]
@@ -50,6 +55,46 @@ def test_watch_withdraw_deposits(mocked_http):
         "escrowAddress": ESCROW_V2.lower(),
         "chainId": CHAIN_ID,
     }
+
+
+def test_deposits_are_scoped_to_escrow_v2(mocked_http):
+    """The indexer serves several Base escrows, and this client only drives EscrowV2.
+
+    Without the escrowAddress filter an owner's list is dominated by deposits
+    withdraw() cannot touch: live, one depositor returned 35 rows across three
+    escrows, only 9 of them EscrowV2.
+    """
+    client = create_offramp()
+    rows = client.deposits("0x1111111111111111111111111111111111111111")
+    assert {row["escrowAddress"] for row in rows} == {ESCROW_V2.lower()}
+
+    list_request = json.loads(
+        [call for call in mocked_http.calls if str(call.request.url) == INDEXER_URL][0].request.content
+    )
+    assert list_request["variables"]["escrowAddress"] == ESCROW_V2.lower()
+
+
+def test_deposits_rows_carry_an_id_watch_and_withdraw_accept(mocked_http):
+    """deposits() -> watch()/close() has to compose.
+
+    The row's `id` is the indexer's composite "<escrow>_<depositId>" key: watch()
+    binds it to $depositId: numeric! and gets an empty set back, and withdraw()
+    raises ValueError from int(). Rows carry the onchain depositId for that reason.
+    """
+    client = create_offramp()
+    row = client.deposits("0x1111111111111111111111111111111111111111")[0]
+    assert row["id"] == f"{row['escrowAddress']}_{row['depositId']}"
+
+    assert list(client.watch(row["depositId"]))[0]["status"] == "ACTIVE"
+    assert client.close(row["depositId"]).data.startswith("0x")
+
+    # respx replays the fixture whatever is asked for, so pin the selection set
+    # too: dropping depositId from the query would strand every caller again.
+    list_query = json.loads(
+        [call for call in mocked_http.calls if str(call.request.url) == INDEXER_URL][0].request.content
+    )["query"]
+    assert "depositId" in list_query
+    assert "escrowAddress" in list_query
 
 
 def test_branding_is_usdctofiat_not_peer_cash():

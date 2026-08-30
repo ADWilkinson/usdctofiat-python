@@ -4,6 +4,8 @@
       "Deposit": [
         {
           "id": "0x777777779d229cdf3110e9de47943791c26300ef_42",
+          "depositId": "42",
+          "escrowAddress": "0x777777779d229cdf3110e9de47943791c26300ef",
           "depositor": "0x1111111111111111111111111111111111111111",
           "remainingDeposits": "100000000",
           "outstandingIntentAmount": "0",
