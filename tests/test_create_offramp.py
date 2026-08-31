@@ -3,6 +3,7 @@ import json
 
 from usdctofiat import create_offramp
 from usdctofiat.constants import (
+    BASE_RPC_URL,
     BEST_MANAGER_FEE_BPS,
     CHAIN_ID,
     ESCROW_V2,
@@ -11,7 +12,12 @@ from usdctofiat.constants import (
 )
 
 
-def test_estimate_fast_zero_spread_best_ten_bps():
+def test_estimate_fast_zero_spread_best_ten_bps(mocked_http):
+    """Fee/kind surface. estimate() reads the EUR feed, so this has to be mocked.
+
+    Without mocked_http this is a live Base RPC call. Reproduced as pass, pass,
+    then OracleError: oracle rpc 429 (#24).
+    """
     client = create_offramp()
     fast = client.estimate(mode="fast", amount="100", currency="EUR")
     best = client.estimate(mode="best", amount="100", currency="EUR")
@@ -20,6 +26,12 @@ def test_estimate_fast_zero_spread_best_ten_bps():
     assert best.manager_fee_bps == BEST_MANAGER_FEE_BPS == 10
     assert fast.kind == "oracle-estimate"
     assert "not a locked quote" in fast.note.lower()
+    rpc = [
+        call
+        for call in mocked_http.calls
+        if str(call.request.url).rstrip("/") == BASE_RPC_URL.rstrip("/")
+    ]
+    assert len(rpc) == 2  # fast + best; a missing mock would have 429'd live instead
 
 
 def test_watch_withdraw_deposits(mocked_http):
