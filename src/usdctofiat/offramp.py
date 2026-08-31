@@ -15,7 +15,9 @@ from .calldata import (
     extract_deposit_id,
     extract_tx_hash,
     normalize_payee,
+    oracle_feed_for,
     parse_usdc_amount,
+    payment_method_hash,
     set_rate_manager_tx,
     withdraw_tx,
 )
@@ -85,6 +87,12 @@ class Offramp:
         units = parse_usdc_amount(amount)
         platform_key = platform.strip().lower()
         currency_key = currency.strip().upper()
+        # Settle every local check before the curator POST. An unsupported
+        # platform or currency can never reach createDeposit, so posting first
+        # only mints a maker record for a payee the cash-out will never use and
+        # replaces the platform ValidationError with whatever the curator says.
+        payment_method_hash(platform_key)
+        oracle_feed_for(currency_key)
         handle = normalize_payee(platform_key, payee)
         digest = payee_details_hash or self.curator.create_payee_hash(platform=platform_key, payee=handle)
         txs = [

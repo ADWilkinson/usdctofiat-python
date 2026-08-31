@@ -5,7 +5,7 @@ import respx
 from eth_abi import decode
 from eth_utils import decode_hex
 
-from usdctofiat import ModeRequired, SignerRequired, cashout, create_offramp
+from usdctofiat import ModeRequired, SignerRequired, ValidationError, cashout, create_offramp
 from usdctofiat.attribution import parse_erc8021
 from usdctofiat.calldata import CREATE_DEPOSIT_TUPLE
 from usdctofiat.constants import (
@@ -176,3 +176,55 @@ def test_withdraw_accepts_the_same_signer_returns_as_cashout(mocked_http):
         assert closed.tx_hash == expected
         assert closed.tx_hashes == [expected]
         assert closed.deposit_id == "7"
+
+
+def test_an_unsupported_platform_raises_before_the_curator_is_posted():
+    """The curator answers an unknown processor with a 400 `unsupported_processor_*`
+    envelope, so posting first replaced this client's own ValidationError -- the
+    one that names the nine supported platforms -- with a CuratorError."""
+    with respx.mock(assert_all_called=False) as router:
+        route = router.post(f"{CURATOR_URL}{MAKERS_CREATE_PATH}").mock(
+            return_value=httpx.Response(
+                400,
+                json={
+                    "success": False,
+                    "message": "Unsupported processor: skrill",
+                    "responseObject": None,
+                    "statusCode": 400,
+                    "errorCode": "unsupported_processor_skrill",
+                },
+            )
+        )
+        with pytest.raises(ValidationError) as excinfo:
+            create_offramp().prepare(
+                mode="fast", amount="100", currency="EUR", platform="skrill", payee="alice"
+            )
+    assert excinfo.value.field == "platform"
+    assert route.call_count == 0
+
+
+def test_an_unsupported_currency_raises_before_a_maker_record_is_minted(mocked_http):
+    """A currency with no Base feed can never be encoded, so hashing the payee
+    first only creates a curator maker record for a cash-out that cannot run."""
+    route = mocked_http.post(f"{CURATOR_URL}{MAKERS_CREATE_PATH}")
+    with pytest.raises(ValidationError) as excinfo:
+        create_offramp().prepare(
+            mode="fast", amount="100", currency="JPY", platform="revolut", payee="alice"
+        )
+    assert excinfo.value.field == "currency"
+    assert route.call_count == 0
+
+
+def test_cashout_rejects_bad_inputs_without_touching_the_curator_or_the_signer(mocked_http):
+    route = mocked_http.post(f"{CURATOR_URL}{MAKERS_CREATE_PATH}")
+
+    def signer(tx):  # pragma: no cover - the point is that it never runs
+        raise AssertionError("signer called for an input the client can reject locally")
+
+    for bad in ({"platform": "skrill"}, {"currency": "JPY"}):
+        kwargs = {"platform": "revolut", "currency": "EUR", **bad}
+        with pytest.raises(ValidationError):
+            create_offramp().cashout(
+                mode="fast", amount="100", payee="alice", signer=signer, **kwargs
+            )
+    assert route.call_count == 0

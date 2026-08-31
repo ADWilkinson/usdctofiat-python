@@ -2,6 +2,18 @@
 
 ## 0.1.1 — unreleased
 
+- `prepare()` / `cashout()` validate the platform and the currency before the
+  curator POST. Both are local lookups the client already owns, but they ran
+  after `create_payee_hash()`, so an unsupported platform reached
+  `POST /v2/makers/create` and came back as `CuratorError: curator 400:
+  {"errorCode": "unsupported_processor_skrill"}` — the client's own
+  `ValidationError`, the one naming the nine platforms in
+  `PAYMENT_METHOD_HASHES`, was unreachable from either entry point. An
+  unsupported currency was worse: the curator accepts the request, mints a maker
+  record for the payee handle, and only then does `oracle_feed_for()` raise, so
+  `prepare(currency="JPY", ...)` disclosed a payee to a third-party production
+  service for a cash-out that could never be encoded. Both now raise before any
+  network call. (#26)
 - `deposits()` filters on the EscrowV2 address and returns the onchain
   `depositId`. The indexer serves every Base escrow it has tracked, so filtering
   on `depositor` + `chainId` alone returned deposits this client cannot drive:
