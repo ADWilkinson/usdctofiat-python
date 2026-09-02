@@ -1,4 +1,4 @@
-"""ERC-8021 attribution lock: peer-ref-TOFIAT then galleonlabs.
+"""ERC-8021 attribution lock: galleonlabs then peer-ref-TOFIAT.
 
 Callers may append extra analytics referrers after those two. They cannot
 replace them. Inbound referral_code and peer-ref-* values are discarded.
@@ -24,7 +24,18 @@ class Attribution:
 
     @property
     def codes(self) -> tuple[str, ...]:
-        return (PEER_REF, *self.referrers)
+        """Distribution source first, then the referral marker, then extras.
+
+        The indexer reads attributionSource out of codes[0], and a peer-ref-*
+        marker is never a source: across the 763 most recent Base deposits
+        carrying codes it sits at index 1 every time it appears and at index 0
+        never. Live deposits from this product read
+        ['galleonlabs', 'peer-ref-TOFIAT', ...], which is the order
+        @usdctofiat/offramp emits. Leading with the marker puts it in the source
+        slot and drops galleonlabs to an index the indexer does not read.
+        """
+        source, *extras = self.referrers or (DISTRIBUTION_REFERRER,)
+        return (source, PEER_REF, *extras)
 
 
 def _is_competing_referral(value: str) -> bool:

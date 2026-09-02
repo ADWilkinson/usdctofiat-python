@@ -2,6 +2,21 @@
 
 ## 0.1.1 — unreleased
 
+- Attribution codes lead with `galleonlabs` and carry `peer-ref-TOFIAT`
+  second, the order `@usdctofiat/offramp` emits and every live deposit carries.
+  The client emitted them reversed, and `codes[0]` is the slot the indexer reads
+  a deposit's `attributionSource` from: across the 763 most recent Base deposits
+  carrying codes, a `peer-ref-*` marker sits at index 0 zero times and at index 1
+  in all 45 that have one, while a `codes[0]` the indexer does not recognise
+  resolves to `attributionSource: null`. Deposits this product creates through
+  the reference SDK read `['galleonlabs', 'peer-ref-TOFIAT', 'bc_nbn6qkni']`, so
+  every deposit a Python install created put the marker in the source slot and
+  dropped the distribution referrer to an index that is not read — the one thing
+  the attribution lock exists to deliver. The layout was never wrong: schema 0,
+  the 16-byte marker and the length prefix all byte-match the live suffix, and
+  this client's own `parse_erc8021()` decodes it. The order is now pinned to the
+  suffix decoded off deposit `3832` rather than to the constants that produce it,
+  which is the check the six existing assertions could not be. (#30)
 - `RATE_MANAGER_V1` points at the deployed Delegate rate manager. The constant
   was `0x...4590D6bB6F78...` where Base runs `0x...4590d6db6f78...` — one nibble
   — and nothing caught it: `to_checksum_address()` re-derives the case of

@@ -94,7 +94,7 @@ def test_approve_and_create_deposit_selectors_and_lock():
     assert USDC[2:].lower() not in approve[10:74]  # spender is escrow
     # spender is EscrowV2
     assert ESCROW_V2[2:].lower() in approve.lower()
-    assert parse_erc8021(approve)[:2] == ("peer-ref-TOFIAT", "galleonlabs")
+    assert parse_erc8021(approve)[:2] == ("galleonlabs", "peer-ref-TOFIAT")
 
     data = encode_create_deposit(
         amount_units=100_000_000,
@@ -105,7 +105,7 @@ def test_approve_and_create_deposit_selectors_and_lock():
     raw = decode_hex(data)
     assert raw[:4] == CREATE_DEPOSIT_SELECTOR
     assert USDC[2:].lower() in data.lower()
-    assert parse_erc8021(data)[:2] == ("peer-ref-TOFIAT", "galleonlabs")
+    assert parse_erc8021(data)[:2] == ("galleonlabs", "peer-ref-TOFIAT")
 
 
 def test_create_deposit_defaults_intent_guardian_to_protocol_guardian():
@@ -245,7 +245,7 @@ def test_withdraw_and_set_rate_manager_selectors():
     rm = encode_set_rate_manager(42, rate_manager_id="0x" + "ab" * 32)
     assert decode_hex(rm)[:4] == SET_RATE_MANAGER_SELECTOR
     assert RATE_MANAGER_V1[2:].lower() in rm.lower()
-    assert parse_erc8021(rm)[0] == "peer-ref-TOFIAT"
+    assert parse_erc8021(rm)[0] == "galleonlabs"
 
 
 def test_extract_deposit_id_from_receipt_and_log():

@@ -11,8 +11,8 @@ def test_lock_discards_inbound_referral_code_and_peer_ref():
     )
     assert attr.referral_code == REFERRAL_CODE
     assert attr.referrers == (DISTRIBUTION_REFERRER, "my-wallet")
-    assert attr.codes[0] == PEER_REF
-    assert attr.codes[1] == DISTRIBUTION_REFERRER
+    assert attr.codes[0] == DISTRIBUTION_REFERRER
+    assert attr.codes[1] == PEER_REF
 
 
 def test_create_offramp_discards_referral_kwargs():
@@ -27,10 +27,10 @@ def test_erc8021_suffix_is_schema_0_and_parseable():
     assert suffix.endswith(bytes.fromhex("80218021802180218021802180218021"))
     assert suffix[-17] == 0  # schema id
     codes = parse_erc8021(b"0xdead" + suffix)
-    assert codes == ("peer-ref-TOFIAT", "galleonlabs", "my-wallet")
+    assert codes == ("galleonlabs", "peer-ref-TOFIAT", "my-wallet")
 
 
 def test_append_attribution_keeps_calldata_prefix():
     out = append_attribution("0x095ea7b3")
     assert out.startswith("0x095ea7b3")
-    assert parse_erc8021(out)[0] == "peer-ref-TOFIAT"
+    assert parse_erc8021(out)[0] == "galleonlabs"
