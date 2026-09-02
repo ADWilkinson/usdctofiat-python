@@ -11,6 +11,7 @@ from usdctofiat.calldata import CREATE_DEPOSIT_TUPLE
 from usdctofiat.constants import (
     CHAIN_ID,
     CURATOR_URL,
+    DELEGATE_RATE_MANAGER_ID,
     ERC8021_MARKER,
     ESCROW_V2,
     INTENT_GUARDIAN,
@@ -95,7 +96,33 @@ def test_best_is_same_deposit_plus_delegate_hook(mocked_http):
     assert prepared.delegate_hook.fee_bps == 10
     assert prepared.delegate_hook.step == "setRateManager"
     assert prepared.delegate_hook.to.lower() == ESCROW_V2.lower()
+    assert prepared.delegate_hook.rate_manager_id == DELEGATE_RATE_MANAGER_ID
     assert prepared.access_policy_required is True
+
+
+def test_best_hook_encodes_from_prepare_output_alone(mocked_http):
+    """prepare(mode="best") -> encode_delegate_hook(deposit_id) is the documented path.
+
+    It raised for every caller: the hook named a rate manager but no
+    rateManagerId, and encode_delegate_hook() required one the package never
+    shipped, so the 10 bps Delegate manager could not be attached to any deposit.
+    """
+    client = create_offramp()
+    prepared = client.prepare(
+        mode="best",
+        amount="25",
+        currency="USD",
+        platform="venmo",
+        payee="@alice",
+    )
+    tx = client.encode_delegate_hook(4527)  # no argument beyond the deposit id
+
+    assert tx.to.lower() == ESCROW_V2.lower()
+    assert tx.chain_id == CHAIN_ID
+    assert prepared.delegate_hook.rate_manager_id[2:].lower() in tx.data.lower()
+    assert prepared.delegate_hook.rate_manager[2:].lower() in tx.data.lower()
+    assert parse_erc8021(tx.data)[:2] == ("galleonlabs", "peer-ref-TOFIAT")
+    assert prepared.as_dict()["delegate_hook"]["rate_manager_id"] == DELEGATE_RATE_MANAGER_ID
 
 
 def test_cashout_signer_callback(mocked_http):

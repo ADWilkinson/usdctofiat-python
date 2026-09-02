@@ -68,6 +68,20 @@ for tx, step in zip(prepared.txs, prepared.steps):
 
 There is no `POST /cashout`. Deposit creation is onchain.
 
+## Best follow-up
+
+Best creates the same deposit as Fast, then attaches the Delegate rate manager
+once EscrowV2 has given the deposit an id. `prepare(mode="best")` returns the
+hook; `encode_delegate_hook()` encodes it against
+`DELEGATE_RATE_MANAGER_ID` (Delegate by USDCtoFiat, 10 bps) unless you pass
+another registry entry.
+
+```python
+order = offramp.cashout(mode="best", signer=signer, amount="100",
+                        currency="EUR", platform="revolut", payee="alice")
+signer(offramp.encode_delegate_hook(order.deposit_id))
+```
+
 ## Currencies
 
 The deposit rate comes from the currency's Chainlink feed on Base at 0 bps, so

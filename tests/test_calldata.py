@@ -22,6 +22,7 @@ from usdctofiat.constants import (
     CHAINLINK_ORACLE_ADAPTER,
     CHAINLINK_ORACLE_FEEDS,
     DEFAULT_ORACLE_MAX_STALENESS,
+    DELEGATE_RATE_MANAGER_ID,
     ERC8021_MARKER,
     ESCROW_V2,
     FAST_SPREAD_BPS,
@@ -246,6 +247,33 @@ def test_withdraw_and_set_rate_manager_selectors():
     assert decode_hex(rm)[:4] == SET_RATE_MANAGER_SELECTOR
     assert RATE_MANAGER_V1[2:].lower() in rm.lower()
     assert parse_erc8021(rm)[0] == "galleonlabs"
+
+
+def _set_rate_manager_args(data: str):
+    raw = decode_hex(data)
+    payload = raw[4 : raw.rfind(ERC8021_MARKER)]
+    deposit_id, rate_manager, rm_id = decode(["uint256", "address", "bytes32"], payload)
+    return deposit_id, rate_manager.lower(), "0x" + rm_id.hex()
+
+
+def test_set_rate_manager_defaults_to_the_delegate_registry_entry():
+    """The id was a required argument no install could supply, so Best could not encode.
+
+    setRateManager takes (depositId, address, bytes32 rateManagerId). The address
+    has been shipped since #28; without the id the call raised ValidationError
+    from every entry point.
+    """
+    deposit_id, rate_manager, rm_id = _set_rate_manager_args(encode_set_rate_manager(4527))
+    assert deposit_id == 4527
+    assert rate_manager == RATE_MANAGER_V1.lower()
+    assert rm_id == DELEGATE_RATE_MANAGER_ID
+
+
+def test_set_rate_manager_honours_an_explicit_id():
+    """Another registry entry is still drivable; the default is not a lock."""
+    other = "0x" + "cd" * 32
+    _, _, rm_id = _set_rate_manager_args(encode_set_rate_manager(7, rate_manager_id=other))
+    assert rm_id == other
 
 
 def test_extract_deposit_id_from_receipt_and_log():

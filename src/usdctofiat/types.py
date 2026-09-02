@@ -33,12 +33,13 @@ class DelegateHook:
     step: str = "setRateManager"
     to: str = ""
     rate_manager: str = ""
+    rate_manager_id: str = ""
     fee_bps: int = 10
     requires: str = "deposit_id"
     note: str = (
         "Best is the same createDeposit as Fast, then EscrowV2.setRateManager "
-        "on RateManagerV1 (10 bps). Encode after deposit_id is known. v1 does not "
-        "invent a second vault."
+        "on RateManagerV1 with rate_manager_id (10 bps). Encode after deposit_id "
+        "is known. v1 does not invent a second vault."
     )
 
     def as_dict(self) -> dict[str, Any]:
@@ -46,6 +47,7 @@ class DelegateHook:
             "step": self.step,
             "to": self.to,
             "rate_manager": self.rate_manager,
+            "rate_manager_id": self.rate_manager_id,
             "fee_bps": self.fee_bps,
             "requires": self.requires,
             "note": self.note,

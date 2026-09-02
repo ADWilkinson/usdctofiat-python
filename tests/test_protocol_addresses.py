@@ -14,6 +14,7 @@ from eth_utils import is_checksum_address
 from usdctofiat import constants
 
 ADDRESS = re.compile(r"^0x[0-9a-fA-F]{40}$")
+BYTES32 = re.compile(r"^0x[0-9a-f]{64}$")
 
 # Read off Base mainnet: contract code, decoded EscrowV2 createDeposit calldata,
 # and the public indexer's Deposit / MethodCurrency rows.
@@ -25,6 +26,15 @@ ONCHAIN = {
     "CHAINLINK_ORACLE_ADAPTER_V2": "0x53881a928abd61c095e5f30b63bc554872c3b2f1",
     "INTENT_GUARDIAN": "0x83671606454fa72ba1e2831e18c5090d25629414",
     "GATING_SERVICE": "0x396d31055db28c0c6f36e8b36f18fe7227248a97",
+}
+
+# Registry ids EscrowV2 takes as bytes32, read back through
+# getRateManager(bytes32) on RATE_MANAGER_V1. An unregistered id answers with an
+# all-zero struct, so a populated one is real registration.
+ONCHAIN_IDS = {
+    # manager 0xc141cbe4f4a9cabc3cc78159a9268a4e008922cd, "Delegate by USDCtoFiat",
+    # https://delegate.usdctofiat.xyz, fee 1e15 = 10 bps == BEST_MANAGER_FEE_BPS
+    "DELEGATE_RATE_MANAGER_ID": "0x8666d6fb0f6797c56e95339fd7ca82fdd348b9db200e10a4c4aa0a0b879fc41c",
 }
 
 # Chainlink FX feeds on Base, each confirmed by its own description().
@@ -83,3 +93,16 @@ def test_mixed_case_addresses_carry_a_valid_checksum():
         if body == body.lower() or body == body.upper():
             continue  # no checksum encoded, nothing to verify
         assert is_checksum_address(value), f"{name} = {value} is not EIP-55 checksummed"
+
+
+def test_registry_ids_match_base_mainnet():
+    """A rate manager id is bytes32, not an address, and only one is this product's.
+
+    setRateManager takes (uint256, address, bytes32). An address-shaped or
+    truncated id left-pads to a valid word and encodes silently; the neighbouring
+    0x361d0c29... on the same registry is PeerEARN's manager at 5e16, not ours.
+    """
+    for name, expected in ONCHAIN_IDS.items():
+        value = getattr(constants, name)
+        assert BYTES32.match(value), f"{name} = {value} is not a lowercase bytes32"
+        assert value == expected, name
