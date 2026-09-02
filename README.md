@@ -57,7 +57,7 @@ for tx, step in zip(prepared.txs, prepared.steps):
     print(step, tx.to, tx.data[:10])
 ```
 
-`create_offramp()` locks attribution to `peer-ref-TOFIAT` then `galleonlabs`. Inbound `referral_code` and `peer-ref-*` values are discarded. Extra analytics referrers may be appended after those two.
+`create_offramp()` locks attribution to `galleonlabs` then `peer-ref-TOFIAT`, the order the indexer reads a deposit's source from. Inbound `referral_code` and `peer-ref-*` values are discarded. Extra analytics referrers may be appended after those two.
 
 ## What v1 does
 

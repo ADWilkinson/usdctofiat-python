@@ -5,7 +5,7 @@ Python client for non-custodial USDC-to-fiat cash-out on Base.
 Built on the public Peer/ZKP2P protocol. Not a Peer Cash product.
 
 cashout(mode="fast"|"best") is required. Fast is 0% / TOFIAT. Best is Delegate, 10 bps.
-create_offramp() locks peer-ref-TOFIAT then galleonlabs. No private keys.
+create_offramp() locks galleonlabs then peer-ref-TOFIAT. No private keys.
 """
 
 from .attribution import Attribution, append_attribution, erc8021_suffix, lock_attribution, parse_erc8021

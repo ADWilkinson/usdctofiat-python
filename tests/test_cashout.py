@@ -57,7 +57,7 @@ def test_fast_prepare_path_mocked(mocked_http):
     assert prepared.txs[0].chain_id == CHAIN_ID
     assert prepared.txs[0].value == 0
     for tx in prepared.txs:
-        assert parse_erc8021(tx.data)[:2] == ("peer-ref-TOFIAT", "galleonlabs")
+        assert parse_erc8021(tx.data)[:2] == ("galleonlabs", "peer-ref-TOFIAT")
     # curator was hit; cashout HTTP was not
     calls = [str(c.request.url) for c in mocked_http.calls]
     assert any("/v2/makers/create" in u for u in calls)
