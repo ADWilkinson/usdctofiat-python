@@ -2,6 +2,25 @@
 
 ## 0.1.1 — unreleased
 
+- `mode="best"` can encode its `setRateManager` hook. #28 fixed the rate manager
+  *address*; the `bytes32 rateManagerId` EscrowV2 takes beside it was never in
+  the package. `encode_delegate_hook()` required it as a keyword argument and
+  `encode_set_rate_manager()` raised `ValidationError: Best setRateManager needs
+  the Delegate rateManagerId after deposit creation` without one, while nothing
+  in `src/`, the `DelegateHook` from `prepare(mode="best")`, or the README ever
+  named a value — so the documented Best follow-up ended in an exception on every
+  install and a Best cash-out was a Fast deposit with the 10 bps Delegate manager
+  never attached. `DELEGATE_RATE_MANAGER_ID` is now shipped and defaulted, and it
+  is the id `@usdctofiat/offramp@9.0.0` passes on all five of its
+  `setRateManager` paths. `getRateManager(bytes32)` on the registry decodes it to
+  manager `0xc141cbe4…8922cd`, name `Delegate by USDCtoFiat`, url
+  `https://delegate.usdctofiat.xyz` and fee `1e15` — 10 bps, the number
+  `BEST_MANAGER_FEE_BPS` already claimed — where an unregistered id answers with
+  an all-zero struct; 258 of the 500 most recent EscrowV2 deposits carrying a
+  rate manager use it, all against `RATE_MANAGER_V1`. The id is pinned to that
+  registry read rather than to the constant that produces it, and an explicit
+  `rate_manager_id` still overrides it. `cashout()` still does not sign the hook
+  itself: the deposit id only exists after `createDeposit` is mined. (#32)
 - Attribution codes lead with `galleonlabs` and carry `peer-ref-TOFIAT`
   second, the order `@usdctofiat/offramp` emits and every live deposit carries.
   The client emitted them reversed, and `codes[0]` is the slot the indexer reads

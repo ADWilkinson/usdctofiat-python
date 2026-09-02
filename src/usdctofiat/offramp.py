@@ -202,8 +202,12 @@ class Offramp:
 
     close = withdraw
 
-    def encode_delegate_hook(self, deposit_id: int | str, *, rate_manager_id: str) -> UnsignedTx:
-        """Best follow-up once the EscrowV2 id is known."""
+    def encode_delegate_hook(self, deposit_id: int | str, *, rate_manager_id: str | None = None) -> UnsignedTx:
+        """Best follow-up once the EscrowV2 id is known.
+
+        Defaults to the Delegate rate manager this product runs; pass
+        rate_manager_id to attach a different registry entry.
+        """
         return set_rate_manager_tx(int(deposit_id), rate_manager_id=rate_manager_id, attribution=self.attribution)
 
 

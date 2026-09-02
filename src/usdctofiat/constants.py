@@ -15,6 +15,12 @@ ORCHESTRATOR = "0x888888359E981B5225CA48fbCdCeff702FC3b888"
 # as rateManagerAddress; a wrong one reverts setRateManager with
 # InvalidRateManager(address) rather than failing at encode time.
 RATE_MANAGER_V1 = "0xeEd7Db23e724aC4590D6dB6F78fDa6DB203535F3"
+# The registry entry EscrowV2.setRateManager takes alongside the address.
+# getRateManager(bytes32) on RATE_MANAGER_V1 decodes this id to manager
+# 0xc141cbe4f4a9cabc3cc78159a9268a4e008922cd, name "Delegate by USDCtoFiat",
+# url https://delegate.usdctofiat.xyz, fee 1e15 = 10 bps. An unregistered id
+# returns an all-zero struct instead.
+DELEGATE_RATE_MANAGER_ID = "0x8666d6fb0f6797c56e95339fd7ca82fdd348b9db200e10a4c4aa0a0b879fc41c"
 CHAINLINK_ORACLE_ADAPTER_V2 = "0x53881a928abD61C095e5f30b63bc554872C3b2f1"
 # @zkp2p/sdk@0.12.0 — adapter used for current V2.2 oracle floors
 CHAINLINK_ORACLE_ADAPTER = "0xfc81d1b5841e697973af3072fc8e03af76cb39ef"

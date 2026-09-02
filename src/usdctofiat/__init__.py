@@ -12,6 +12,7 @@ from .attribution import Attribution, append_attribution, erc8021_suffix, lock_a
 from .constants import (
     BEST_MANAGER_FEE_BPS,
     CHAIN_ID,
+    DELEGATE_RATE_MANAGER_ID,
     DISTRIBUTION_REFERRER,
     ESCROW_V2,
     FAST_SPREAD_BPS,
@@ -41,6 +42,7 @@ __all__ = [
     "CHAIN_ID",
     "CashoutResult",
     "CuratorError",
+    "DELEGATE_RATE_MANAGER_ID",
     "DISTRIBUTION_REFERRER",
     "DelegateHook",
     "ESCROW_V2",

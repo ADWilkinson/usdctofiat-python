@@ -20,6 +20,7 @@ from .constants import (
     CHAINLINK_ORACLE_FEEDS,
     CURRENCY_HASHES,
     DEFAULT_ORACLE_MAX_STALENESS,
+    DELEGATE_RATE_MANAGER_ID,
     ESCROW_V2,
     FAST_SPREAD_BPS,
     GATING_SERVICE,
@@ -235,13 +236,13 @@ def encode_set_rate_manager(
     rate_manager_id: str | bytes | None = None,
     attribution: Attribution | None = None,
 ) -> str:
-    """Best hook. Requires a known EscrowV2 deposit id. Does not invent a second vault."""
-    if rate_manager_id is None:
-        raise ValidationError(
-            "Best setRateManager needs the Delegate rateManagerId after deposit creation",
-            field="rate_manager_id",
-        )
-    rm_id = _bytes32(rate_manager_id)
+    """Best hook. Requires a known EscrowV2 deposit id. Does not invent a second vault.
+
+    Defaults to the Delegate by USDCtoFiat registry entry, the id the reference
+    SDK attaches. Nothing else in the package carried it, so the documented Best
+    follow-up raised for every caller.
+    """
+    rm_id = _bytes32(rate_manager_id if rate_manager_id is not None else DELEGATE_RATE_MANAGER_ID)
     body = SET_RATE_MANAGER_SELECTOR + encode(
         ["uint256", "address", "bytes32"],
         [deposit_id, checksum(rate_manager), bytes.fromhex(rm_id[2:])],
@@ -271,7 +272,12 @@ def set_rate_manager_tx(deposit_id: int, **kwargs: object) -> UnsignedTx:
 
 
 def delegate_hook() -> DelegateHook:
-    return DelegateHook(to=checksum(ESCROW_V2), rate_manager=checksum(RATE_MANAGER_V1), fee_bps=BEST_MANAGER_FEE_BPS)
+    return DelegateHook(
+        to=checksum(ESCROW_V2),
+        rate_manager=checksum(RATE_MANAGER_V1),
+        rate_manager_id=DELEGATE_RATE_MANAGER_ID,
+        fee_bps=BEST_MANAGER_FEE_BPS,
+    )
 
 
 def access_policy_required(platform: str) -> bool:
