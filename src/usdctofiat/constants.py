@@ -11,8 +11,10 @@ PRECISE_UNIT = 10**18
 USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 ESCROW_V2 = "0x777777779d229cdF3110e9de47943791c26300Ef"
 ORCHESTRATOR = "0x888888359E981B5225CA48fbCdCeff702FC3b888"
-# contracts-v2@0.4.0
-RATE_MANAGER_V1 = "0xeEd7Db23e724aC4590D6bB6F78fDa6DB203535F3"
+# contracts-v2@0.4.0. Verified against the address live EscrowV2 deposits carry
+# as rateManagerAddress; a wrong one reverts setRateManager with
+# InvalidRateManager(address) rather than failing at encode time.
+RATE_MANAGER_V1 = "0xeEd7Db23e724aC4590D6dB6F78fDa6DB203535F3"
 CHAINLINK_ORACLE_ADAPTER_V2 = "0x53881a928abD61C095e5f30b63bc554872C3b2f1"
 # @zkp2p/sdk@0.12.0 — adapter used for current V2.2 oracle floors
 CHAINLINK_ORACLE_ADAPTER = "0xfc81d1b5841e697973af3072fc8e03af76cb39ef"

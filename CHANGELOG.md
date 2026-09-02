@@ -2,6 +2,19 @@
 
 ## 0.1.1 — unreleased
 
+- `RATE_MANAGER_V1` points at the deployed Delegate rate manager. The constant
+  was `0x...4590D6bB6F78...` where Base runs `0x...4590d6db6f78...` — one nibble
+  — and nothing caught it: `to_checksum_address()` re-derives the case of
+  whatever 20 bytes it is given, so the typo encoded and round-tripped cleanly.
+  The typed address holds no code, and EscrowV2 answers the resulting
+  `setRateManager` with `InvalidRateManager(0x...d6bb6f78...)`, so `mode="best"`
+  could not attach its 10 bps Delegate manager on any install; the Fast half of
+  a Best cash-out was unaffected because `createDeposit` never reads the rate
+  manager. Live `eth_call` from a real depositor now returns `0x` where it
+  reverted. The protocol addresses and the Chainlink feed table are pinned to
+  literals read off Base rather than to the constants under test, and any
+  mixed-case address constant must be valid EIP-55 — the typo broke the
+  checksum, so that alone catches the class offline. (#28)
 - `prepare()` / `cashout()` validate the platform and the currency before the
   curator POST. Both are local lookups the client already owns, but they ran
   after `create_payee_hash()`, so an unsupported platform reached
