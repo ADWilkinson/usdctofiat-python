@@ -29,7 +29,7 @@ ONCHAIN = {
 
 # Chainlink FX feeds on Base, each confirmed by its own description().
 ONCHAIN_FEEDS = {
-    "USD": constants.ZERO_ADDRESS,
+    "USD": "0x0000000000000000000000000000000000000000",  # passthrough, no feed
     "AUD": "0x46e51b8ca41d709928eda9ae43e42193e6cdf229",
     "BRL": "0x0b0e64c05083fdf9ed7c5d3d8262c4216efc9394",
     "CAD": "0xa840145f87572e82519d578b1f36340368a25d5d",
