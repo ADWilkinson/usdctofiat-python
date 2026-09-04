@@ -10,6 +10,7 @@ from .attribution import lock_attribution
 from .calldata import (
     access_policy_required,
     approve_tx,
+    assert_supported_pair,
     create_deposit_tx,
     delegate_hook,
     extract_deposit_id,
@@ -88,10 +89,13 @@ class Offramp:
         platform_key = platform.strip().lower()
         currency_key = currency.strip().upper()
         # Settle every local check before the curator POST. An unsupported
-        # platform or currency can never reach createDeposit, so posting first
-        # only mints a maker record for a payee the cash-out will never use and
-        # replaces the platform ValidationError with whatever the curator says.
+        # platform, pair or currency can never reach createDeposit, so posting
+        # first only mints a maker record for a payee the cash-out will never use
+        # and replaces the platform ValidationError with whatever the curator says.
+        # The pair is checked before the feed: a platform whose only onchain
+        # currency has no feed needs to say so, not blame the currency.
         payment_method_hash(platform_key)
+        assert_supported_pair(platform_key, currency_key)
         oracle_feed_for(currency_key)
         handle = normalize_payee(platform_key, payee)
         digest = payee_details_hash or self.curator.create_payee_hash(platform=platform_key, payee=handle)

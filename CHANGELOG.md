@@ -2,6 +2,25 @@
 
 ## 0.1.1 — unreleased
 
+- A cash-out is refused when the platform does not settle the currency. The
+  client checked the platform and the currency separately and never the pair,
+  which is the only thing EscrowV2 checks: it asks `PaymentVerifierRegistry`
+  `0x2b82D244…eb1e` and reverts `CurrencyNotSupported(paymentMethod, currency)`.
+  `venmo`/`EUR`, `monzo`/`USD`, `zelle`/`MXN`, `revolut`/`PHP`, `wise`/`BRL` and
+  every other unregistered pair encoded clean, so the caller signed `approve`,
+  the payee was posted to `/v2/makers/create`, and the `createDeposit` reverted —
+  gas spent and a maker record minted for a deposit that could not exist. Four of
+  the nine platforms settle a single currency onchain (`venmo`, `cashapp`,
+  `chime`, `zelle` are `USD`; `monzo` is `GBP`) against the 14 this client
+  advertised for all of them, and `mercadopago` settles only `ARS`, which has no
+  Base feed, so no Mercado Pago deposit can be priced in v1 at all — it now says
+  so instead of blaming the currency. `PAYMENT_METHOD_CURRENCIES` is read off
+  `getCurrencies(bytes32)` for each shipped payment method hash rather than
+  derived from the constants it guards, and the pair is refused in
+  `encode_create_deposit()` so no reverting calldata can be built and in
+  `prepare()` before the curator POST, the ordering #27 established. The
+  reference client `@usdctofiat/offramp@9.0.0` rejects the same pairs with
+  `${currencyCode} is not supported on ${platform.name}`. (#34)
 - `mode="best"` can encode its `setRateManager` hook. #28 fixed the rate manager
   *address*; the `bytes32 rateManagerId` EscrowV2 takes beside it was never in
   the package. `encode_delegate_hook()` required it as a keyword argument and
