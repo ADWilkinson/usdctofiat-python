@@ -27,6 +27,7 @@ from .constants import (
     INTENT_GUARDIAN,
     MIN_CONVERSION_RATE,
     MIN_USDC_UNITS,
+    PAYMENT_METHOD_CURRENCIES,
     PAYMENT_METHOD_HASHES,
     RATE_MANAGER_V1,
     USDC,
@@ -114,6 +115,44 @@ def payment_method_hash(platform: str) -> str:
     return PAYMENT_METHOD_HASHES[key]
 
 
+def supported_currencies(platform: str) -> list[str]:
+    """Codes this client can both settle on `platform` and price off a feed.
+
+    The registry set and the feed set are different things: revolut settles CNY
+    with no Base feed, and BRL has a feed no payment method carries.
+    """
+    key = platform.strip().lower()
+    onchain = PAYMENT_METHOD_CURRENCIES.get(key, frozenset())
+    return sorted(onchain & set(CHAINLINK_ORACLE_FEEDS))
+
+
+def assert_supported_pair(platform: str, currency: str) -> None:
+    """A payment method only accepts the currencies its verifier is registered for.
+
+    EscrowV2 asks PaymentVerifierRegistry and reverts
+    CurrencyNotSupported(paymentMethod, currency) on a pair it does not carry —
+    after approve has been signed and the payee posted to the curator. Checking
+    the platform and the currency separately passes every one of those pairs.
+    """
+    plat = platform.strip().lower()
+    code = currency.strip().upper()
+    onchain = PAYMENT_METHOD_CURRENCIES.get(plat)
+    if onchain is None or code in onchain:
+        return
+    settleable = supported_currencies(plat)
+    if not settleable:
+        raise ValidationError(
+            f"{plat} settles only {sorted(onchain)} onchain and none of those have a "
+            f"Chainlink feed on Base, so this client cannot price a {plat} deposit",
+            field="platform",
+        )
+    raise ValidationError(
+        f"{plat} does not settle {code}: EscrowV2 reverts CurrencyNotSupported for that "
+        f"pair. {plat} takes {settleable}",
+        field="currency",
+    )
+
+
 def normalize_payee(platform: str, payee: str) -> str:
     key = platform.strip().lower()
     text = (payee or "").strip()
@@ -176,6 +215,7 @@ def encode_create_deposit(
     """EscrowV2.createDeposit at the oracle floor. Fast: 0 bps, no Delegate vault."""
     if not payee_details_hash or payee_details_hash == ZERO_ADDRESS:
         raise ValidationError("payee_details_hash is required", field="payee_details_hash")
+    assert_supported_pair(platform, currency)
     method = bytes.fromhex(payment_method_hash(platform)[2:])
     payee = bytes.fromhex(_bytes32(payee_details_hash)[2:])
     code = bytes.fromhex(currency_hash(currency)[2:])

@@ -142,7 +142,9 @@ class UsdctoFiatTools(Toolkit):
         Args:
             mode: "fast" or "best". Required.
             amount: Human USDC amount (string or number). An int is six-decimal units.
-            currency: Fiat ISO code, e.g. EUR, USD, GBP.
+            currency: Fiat ISO code the platform settles. venmo, cashapp, chime
+                and zelle are USD only; monzo is GBP only; revolut, wise and
+                paypal take a wider list. An unsupported pair is refused.
             platform: Payment rail, e.g. revolut, venmo, monzo.
             payee: Handle on that platform.
 

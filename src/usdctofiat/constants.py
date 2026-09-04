@@ -92,6 +92,40 @@ CURRENCY_HASHES: dict[str, str] = {
     "GBP": "0x90832e2dc3221e4d56977c1aa8f6a6706b9ad6542fbbdaac13097d0fa5e42e67",
 }
 
+# PaymentVerifierRegistry on Base. EscrowV2 asks it whether a payment method
+# carries a currency and reverts CurrencyNotSupported(bytes32,bytes32) when it
+# does not, so a pair outside these sets can never settle.
+PAYMENT_VERIFIER_REGISTRY = "0x2b82D24437ff66Fb173eabDfD67ee2ACeb8bEb1e"
+
+# getCurrencies(bytes32) on PAYMENT_VERIFIER_REGISTRY, read off Base. A currency
+# with a Chainlink feed is not automatically settleable: only the pairs listed
+# here reach a deposit. Codes with no CHAINLINK_ORACLE_FEEDS entry stay in the
+# set because this mirrors the registry, not what this client can price.
+PAYMENT_METHOD_CURRENCIES: dict[str, frozenset[str]] = {
+    "venmo": frozenset({"USD"}),
+    "revolut": frozenset(
+        {
+            "AED", "AUD", "CAD", "CHF", "CNY", "CZK", "DKK", "EUR", "GBP", "HKD",
+            "HUF", "JPY", "MXN", "NOK", "NZD", "PLN", "RON", "SAR", "SEK", "SGD",
+            "THB", "TRY", "USD", "ZAR",
+        }
+    ),
+    "cashapp": frozenset({"USD"}),
+    "wise": frozenset(
+        {
+            "AED", "AUD", "CAD", "CHF", "CNY", "CZK", "DKK", "EUR", "GBP", "HKD",
+            "HUF", "IDR", "ILS", "INR", "JPY", "KES", "MXN", "MYR", "NOK", "NZD",
+            "PHP", "PLN", "RON", "SEK", "SGD", "THB", "TRY", "UGX", "USD", "VND",
+            "ZAR",
+        }
+    ),
+    "mercadopago": frozenset({"ARS"}),
+    "zelle": frozenset({"USD"}),
+    "paypal": frozenset({"AUD", "CAD", "EUR", "GBP", "NZD", "SGD", "USD"}),
+    "monzo": frozenset({"GBP"}),
+    "chime": frozenset({"USD"}),
+}
+
 PLATFORMS_NEEDING_ATTESTATION = frozenset({"wise", "paypal"})
 ACCESS_POLICY_PLATFORMS = frozenset({"venmo", "cashapp", "paypal"})
 

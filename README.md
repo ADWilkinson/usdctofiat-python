@@ -84,13 +84,31 @@ signer(offramp.encode_delegate_hook(order.deposit_id))
 
 ## Currencies
 
-The deposit rate comes from the currency's Chainlink feed on Base at 0 bps, so
-only currencies with a feed are accepted:
+A cash-out needs two things: a Chainlink feed on Base to price the deposit at
+0 bps, and the platform's payment verifier registered for that currency. Only
+the pairs below have both.
 
-`USD` `AUD` `BRL` `CAD` `CHF` `EUR` `GBP` `IDR` `MXN` `NZD` `PHP` `SGD` `TRY` `ZAR`
+| Platform | Currencies |
+| --- | --- |
+| `venmo` | `USD` |
+| `cashapp` | `USD` |
+| `chime` | `USD` |
+| `zelle` | `USD` |
+| `monzo` | `GBP` |
+| `paypal` | `AUD` `CAD` `EUR` `GBP` `NZD` `SGD` `USD` |
+| `revolut` | `AUD` `CAD` `CHF` `EUR` `GBP` `MXN` `NZD` `SGD` `TRY` `USD` `ZAR` |
+| `wise` | `AUD` `CAD` `CHF` `EUR` `GBP` `IDR` `MXN` `NZD` `PHP` `SGD` `TRY` `USD` `ZAR` |
+| `mercadopago` | none in v1 |
 
 Anything else raises `ValidationError`. A code with no feed could otherwise be
-encoded onchain at a fixed 1:1 rate.
+encoded onchain at a fixed 1:1 rate, and a pair the registry does not carry
+reverts `CurrencyNotSupported` in EscrowV2 after the approve is already signed.
+
+`mercadopago` settles only `ARS` onchain and `ARS` has no Base feed, so no
+Mercado Pago deposit can be priced in v1. `revolut` also settles `AED` `CNY`
+`CZK` `DKK` `HKD` `HUF` `JPY` `NOK` `PLN` `RON` `SAR` `SEK` `THB` and `wise` a
+longer list still, but none of those have a feed. `BRL` has a feed and no
+payment method carries it: `estimate()` quotes it, no deposit can use it.
 
 ## Estimate
 
