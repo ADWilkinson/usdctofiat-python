@@ -2,6 +2,22 @@
 
 ## 0.1.1 — unreleased
 
+- `normalize_payee("paypal", …)` returns the same PayPal.me username as
+  `normalizePaypalMeUsername` in `@usdctofiat/offramp@9.0.0`. The previous
+  branch was unanchored `replace("https://", "")` / `replace("www.", "")` and
+  only stripped a `paypal.me/` prefix, so
+  `https://www.paypal.com/paypalme/Alice` was posted as
+  `paypal.com/paypalme/Alice`, `Alice` and `@alice` kept their case or sigil,
+  and a `?country.x=GB` tail stayed on the handle. The curator hashes that
+  exact `offchainId` into `payeeDetails`, so a taker proving payment to the
+  real username could never match — the USDC sat in escrow until the maker
+  withdrew. `paypal` is fully reachable: all seven of its registry currencies
+  have a Base feed, so #34's pair gate never blocked it. The transform now
+  lowercases, strips a leading `@`, drops `?`/`#` tails, takes the username
+  off `paypal.com/paypalme/<user>` and `paypal.me/<user>` (including a
+  trailing `/25` amount), and leaves a non-PayPal host unchanged. Bare
+  `paypal.me` / `paypal.com` hosts still resolve to `""`, matching the
+  reference. The other eight platforms are untouched. (#36)
 - A cash-out is refused when the platform does not settle the currency. The
   client checked the platform and the currency separately and never the pair,
   which is the only thing EscrowV2 checks: it asks `PaymentVerifierRegistry`
