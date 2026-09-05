@@ -1,7 +1,11 @@
 
+import json
+
+import pytest
 from eth_abi import decode
 from eth_utils import decode_hex
 
+from usdctofiat import create_offramp
 from usdctofiat.attribution import erc8021_suffix, lock_attribution, parse_erc8021
 from usdctofiat.calldata import (
     APPROVE_SELECTOR,
@@ -21,6 +25,7 @@ from usdctofiat.calldata import (
 from usdctofiat.constants import (
     CHAINLINK_ORACLE_ADAPTER,
     CHAINLINK_ORACLE_FEEDS,
+    CURATOR_URL,
     DEFAULT_ORACLE_MAX_STALENESS,
     DELEGATE_RATE_MANAGER_ID,
     ERC8021_MARKER,
@@ -28,6 +33,7 @@ from usdctofiat.constants import (
     FAST_SPREAD_BPS,
     GATING_SERVICE,
     INTENT_GUARDIAN,
+    MAKERS_CREATE_PATH,
     MIN_CONVERSION_RATE,
     PRECISE_UNIT,
     RATE_MANAGER_V1,
@@ -87,6 +93,50 @@ def test_normalize_payee_platform_rules():
     assert normalize_payee("zelle", "Maker@Example.com") == "maker@example.com"
     assert normalize_payee("chime", "Sign") == "$sign"
     assert normalize_payee("paypal", "https://paypal.me/alice") == "alice"
+
+
+# Lifted from `@usdctofiat/offramp@9.0.0` `normalizePaypalMeUsername`. The
+# previous paypal branch only passed the last green row; a paypal.com/paypalme
+# link, mixed case, a query tail or a leading @ all hashed a different string.
+PAYPAL_ME_ROWS = [
+    ("https://www.paypal.com/paypalme/Alice", "alice"),
+    ("https://www.paypal.com/paypalme/alice/25", "alice"),
+    ("https://paypal.me/Alice", "alice"),
+    ("paypal.me/Alice", "alice"),
+    ("Alice", "alice"),
+    ("@alice", "alice"),
+    ("https://paypal.me/alice?country.x=GB", "alice"),
+    ("https://paypal.me/alice", "alice"),
+    ("paypal.me", ""),
+    ("paypal.com", ""),
+    ("https://example.com/alice", "https://example.com/alice"),
+    ("example.com/alice", "example.com/alice"),
+]
+
+
+@pytest.mark.parametrize("payee,expected", PAYPAL_ME_ROWS)
+def test_normalize_payee_paypal_matches_the_reference(payee, expected):
+    assert normalize_payee("paypal", payee) == expected
+
+
+def test_prepare_posts_the_normalized_paypal_handle(mocked_http):
+    """The curator hashes offchainId as-is. A paypal.com/paypalme link used to
+    be posted whole, so payeeDetailsHash could never match a PayPal payment."""
+    create_offramp().prepare(
+        mode="fast",
+        amount="100",
+        currency="GBP",
+        platform="paypal",
+        payee="https://www.paypal.com/paypalme/Alice",
+    )
+    curator = [
+        call
+        for call in mocked_http.calls
+        if str(call.request.url) == f"{CURATOR_URL}{MAKERS_CREATE_PATH}"
+    ]
+    assert len(curator) == 1
+    body = json.loads(curator[0].request.content)
+    assert body == {"processorName": "paypal", "offchainId": "alice"}
 
 
 def test_approve_and_create_deposit_selectors_and_lock():

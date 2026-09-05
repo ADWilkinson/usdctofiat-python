@@ -165,11 +165,7 @@ def normalize_payee(platform: str, payee: str) -> str:
     if key in {"revolut", "wise"}:
         return text.lstrip("@")
     if key == "paypal":
-        lowered = text.replace("https://", "").replace("http://", "")
-        lowered = lowered.replace("www.", "")
-        if lowered.lower().startswith("paypal.me/"):
-            lowered = lowered[10:]
-        return lowered
+        return _normalize_paypal_me_username(text)
     if key == "zelle":
         return text.lower()
     if key == "chime":
@@ -181,6 +177,45 @@ def normalize_payee(platform: str, payee: str) -> str:
             body = body.split("monzo.me/", 1)[1]
         return body.lstrip("@")
     return text
+
+
+def _normalize_paypal_me_username(value: str) -> str:
+    """Bare PayPal.me username, matching `@usdctofiat/offramp@9.0.0`.
+
+    The curator hashes this string as `offchainId`. A paypal.com/paypalme link,
+    a query tail, or mixed case used to be posted as-is, so the deposit's
+    payeeDetailsHash could never match a payment to the real username.
+    """
+    trimmed = value.strip()
+    if not trimmed:
+        return ""
+    without_protocol = trimmed
+    lowered = trimmed.lower()
+    if lowered.startswith("https://"):
+        without_protocol = trimmed[8:]
+    elif lowered.startswith("http://"):
+        without_protocol = trimmed[7:]
+    cut = len(without_protocol)
+    for sep in "?#":
+        idx = without_protocol.find(sep)
+        if idx != -1 and idx < cut:
+            cut = idx
+    host, *path_segments = without_protocol[:cut].lstrip("/").split("/")
+    normalized_host = host.lower()
+    if normalized_host.startswith("www."):
+        normalized_host = normalized_host[4:]
+    if normalized_host == "paypal.me":
+        username = path_segments[0] if path_segments else ""
+        return username.lstrip("@").strip().lower()
+    if normalized_host == "paypal.com":
+        paypal_me_path = path_segments[0] if path_segments else ""
+        username = path_segments[1] if len(path_segments) > 1 else ""
+        if paypal_me_path.lower() != "paypalme":
+            return ""
+        return username.lstrip("@").strip().lower()
+    if lowered.startswith("https://") or lowered.startswith("http://") or "/" in trimmed:
+        return trimmed
+    return trimmed.lstrip("@").lower()
 
 
 def encode_oracle_adapter_config(feed: str = ZERO_ADDRESS, invert: bool = False) -> bytes:
